@@ -123,3 +123,26 @@ body { font-feature-settings: "ss01", "cv11"; text-rendering: optimizeLegibility
 .hub-tile:active { transform: translateY(0) scale(0.985); }
 @media (prefers-reduced-motion: reduce) { .hub-tile, .hub-tile:hover, .hub-tile:active { transition: none; transform: none; } }
 .hub-tile.rise { animation-fill-mode: backwards; }
+
+/* Isometric stacks on the needs board. The pile's state is its colour:
+   outlined = open, tinted = pledged, solid = fulfilled. Blocks land one after another. */
+.iso polygon, .iso circle { stroke-linejoin: round; stroke-width: 1.2; }
+.iso-floor { fill: var(--accent-track); opacity: 0.45; }
+.iso[data-status="open"] .iso-t { fill: var(--surface); }
+.iso[data-status="open"] .iso-l, .iso[data-status="open"] .iso-r { fill: var(--accent-soft); }
+.iso[data-status="open"] polygon, .iso[data-status="open"] circle { stroke: color-mix(in srgb, var(--accent) 70%, white); stroke-dasharray: 3.5 2.5; }
+.iso[data-status="pledged"] .iso-t { fill: color-mix(in srgb, var(--accent) 22%, white); }
+.iso[data-status="pledged"] .iso-l { fill: color-mix(in srgb, var(--accent) 38%, white); }
+.iso[data-status="pledged"] .iso-r { fill: color-mix(in srgb, var(--accent) 54%, white); }
+.iso[data-status="pledged"] polygon, .iso[data-status="pledged"] circle { stroke: var(--surface); }
+.iso[data-status="fulfilled"] .iso-t { fill: color-mix(in srgb, var(--accent) 62%, white); }
+.iso[data-status="fulfilled"] .iso-l { fill: var(--accent); }
+.iso[data-status="fulfilled"] .iso-r { fill: var(--accent-ink); }
+.iso[data-status="fulfilled"] polygon, .iso[data-status="fulfilled"] circle { stroke: color-mix(in srgb, var(--accent) 62%, white); }
+@keyframes land { from { opacity: 0; transform: translateY(-16px); } 70% { opacity: 1; transform: translateY(1.5px); } to { opacity: 1; transform: none; } }
+.iso-block { animation: land 0.42s cubic-bezier(0.2, 0.8, 0.3, 1) both; animation-delay: calc(var(--i) * 28ms); }
+
+/* An ask card settles when its state changes. */
+@keyframes settle { 0% { transform: scale(1); } 35% { transform: scale(1.025); } 100% { transform: scale(1); } }
+.ask-card[data-changed="true"] { animation: settle 0.5s cubic-bezier(0.2, 0.8, 0.3, 1); }
+@media (prefers-reduced-motion: reduce) { .iso-block, .ask-card[data-changed="true"] { animation: none !important; } }
