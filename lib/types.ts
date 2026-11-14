@@ -74,4 +74,6 @@ export type NightPrediction = {
   high: number;
   spill: number; // max(0, raw - capacity)
   capacity: number;
+  model?: "ols" | "gbm"; // which model produced this (the backtest champion)
+  challenger?: number; // the other model's raw prediction, shown for comparison
 };

@@ -11,9 +11,10 @@ export type Night = { day: ForecastDay; results: RuleResult[]; prediction: Night
 export async function buildWeek(scenario: boolean): Promise<{ nights: Night[]; source: ForecastSource }> {
   const { days, source } = await getForecast();
   const used = scenario ? applyArcticFront(days) : days;
-  const nights = used.map((day) => {
+  const nights = used.map((day, i) => {
     const results = evaluateAll(day, RULES);
-    const prediction = predictNight(day);
+    // Earlier nights in the forecast feed the cold-streak input.
+    const prediction = predictNight(day, undefined, used.slice(0, i).map((d) => d.lowF ?? 50));
     return { day, results, prediction, plan: planNight(day, prediction, results) };
   });
   return { nights, source: scenario ? { ...source, kind: "scenario" } : source };

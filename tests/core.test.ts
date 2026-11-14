@@ -90,3 +90,18 @@ describe("routing", () => {
     expect(excluded.map((r) => r.site.id)).toContain("firehouse-shelter");
   });
 });
+
+import { fitGBM } from "@/lib/model/gbm";
+import { ARENA } from "@/lib/model/forecast";
+describe("gradient-boosted trees", () => {
+  it("respects the monotone constraint: a colder night never predicts fewer people", () => {
+    const X = Array.from({ length: 200 }, (_, i) => [i % 60]);
+    const y = X.map(([t]) => 100 - t + ((t * 7) % 5)); // noisy but falling
+    const m = fitGBM(X, y, [-1]);
+    for (let t = 1; t < 60; t++) expect(m.predict([t])).toBeLessThanOrEqual(m.predict([t - 1]) + 1e-9);
+  });
+  it("the champion is whichever model has the lower held-out error", () => {
+    const { ols, gbm } = ARENA.results;
+    expect(ARENA.champion).toBe(gbm.mae < ols.mae ? "gbm" : "ols");
+  });
+});

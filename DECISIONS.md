@@ -103,3 +103,8 @@ Each entry: what we decided, the alternative we rejected, and why. Newest at the
 **Rejected:** a table of intakes; exact small counts; storing the intake form.
 **Why:** "2 people needed medical help on Tuesday at one shelter" can identify someone. A total cannot. One exception, stated plainly: the hub's "people routed today" is a single running total with no breakdown, shown exactly so volunteers can see their work count.
 **Honesty note:** the 14 days of intake history are SIMULATED (seed 311) and labeled wherever they appear; only today's routings are real.
+
+## 21. A second model, picked by the backtest (the "moat")
+**Decided:** a gradient-boosted tree model, written by hand in `lib/model/gbm.ts`, competes with linear regression on held-out weeks (every fifth week, both years). The lower error is the champion and drives all forecasts; the other is shown beside it. Trees are monotone-constrained: colder, wetter or a longer cold spell can never mean fewer people. Both train on **demand** (beds filled + people turned away), which assumes shelters log turn-aways.
+**Rejected:** a neural network; a hosted ML service; letting the more complex model win by default.
+**Why:** the defensible advantage is the nightly data, not the algorithm. The learning curve on `/forecast` shows trees lose with little data and overtake linear regression after roughly a year of nights. The simulator now includes a freezing jump and a cold-streak effect (our assumption, labeled), because a purely linear simulation would have rigged the comparison for linear regression. Trees cannot extrapolate below the coldest nights they have seen, which is one more reason rules, not the model, open warming stations.

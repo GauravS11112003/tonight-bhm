@@ -68,7 +68,20 @@ export function features(date: string, lowF: number, precipProb: number): Featur
   };
 }
 
-export type HistoryRow = { date: string; lowF: number; precipProb: number; occupancy: number } & Features;
+/**
+ * Extra context the tree model may use: streak = consecutive nights below 40°F ending
+ * tonight (1 if only tonight is cold, 0 if tonight is not cold). Needs the nights before.
+ */
+export type Context = { streak: number };
+export function context(lowF: number, prevLows: number[]): Context {
+  let streak = lowF < 40 ? 1 : 0;
+  for (let i = prevLows.length - 1; i >= 0 && streak > 0 && prevLows[i] < 40; i--) streak++;
+  return { streak };
+}
+
+// occupancy = people in a bed (capped at 100). demand = occupancy + people turned away.
+// We train on demand, which assumes shelters log turn-aways: see DECISIONS.md.
+export type HistoryRow = { date: string; lowF: number; precipProb: number; occupancy: number; demand: number } & Features & Context;
 
 /**
  * Seasonal low for Birmingham: ~35°F in mid-January, ~72°F in mid-July
@@ -78,14 +91,17 @@ function seasonalLow(dayOfYear: number) {
   return 53.5 - 18.5 * Math.cos((2 * Math.PI * (dayOfYear - 15)) / 365);
 }
 
-// The "true" effects the simulator uses. The regression should recover numbers
-// close to these; that is the point of the backtest.
-const TRUE = { C: 0.85, P: 5, W: -3, H: 4, M: 3, noise: 4.5 };
+// The "true" effects the simulator uses. The linear ones are what the regression can see.
+// FREEZE and STREAK are not linear, on purpose: our assumption (not a measured fact) is
+// that more people come in once it freezes and stay in through a cold spell. Without them
+// the simulation would be linear by construction and every comparison would be rigged
+// in favour of linear regression.
+const TRUE = { C: 0.85, P: 5, W: -3, H: 4, M: 3, noise: 4.5, FREEZE: 6, STREAK: 1.5 };
 
 export function simulateHistory(endDate = "2026-11-13", days = 730, seed = SEED): HistoryRow[] {
   const r = rng(seed);
   const end = new Date(endDate + "T12:00:00Z");
-  const rows: Omit<HistoryRow, "occupancy">[] = [];
+  const rows: Omit<HistoryRow, "occupancy" | "demand">[] = [];
   const signal: number[] = [];
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(end);
@@ -95,8 +111,10 @@ export function simulateHistory(endDate = "2026-11-13", days = 730, seed = SEED)
     const lowF = Math.round(seasonalLow(doy) + gaussian(r) * 6);
     const precipProb = Math.round(Math.min(1, Math.max(0, r() < 0.35 ? 0.3 + r() * 0.7 : r() * 0.2)) * 100) / 100;
     const f = features(date, lowF, precipProb);
-    rows.push({ date, lowF, precipProb, ...f });
-    signal.push(TRUE.C * f.C + TRUE.P * f.P + TRUE.W * f.W + TRUE.H * f.H + TRUE.M * f.M + gaussian(r) * TRUE.noise);
+    const ctx = context(lowF, rows.slice(-6).map((x) => x.lowF));
+    rows.push({ date, lowF, precipProb, ...f, ...ctx });
+    const nonlinear = (lowF <= 32 ? TRUE.FREEZE : 0) + TRUE.STREAK * Math.min(Math.max(ctx.streak - 1, 0), 4);
+    signal.push(TRUE.C * f.C + TRUE.P * f.P + TRUE.W * f.W + TRUE.H * f.H + TRUE.M * f.M + nonlinear + gaussian(r) * TRUE.noise);
   }
   // Pick the baseline so the capped mean lands on Firehouse's real 2025 average.
   let base = TARGET_MEAN - signal.reduce((a, b) => a + b, 0) / signal.length;
@@ -104,5 +122,8 @@ export function simulateHistory(endDate = "2026-11-13", days = 730, seed = SEED)
     const mean = signal.reduce((a, s) => a + Math.min(CAPACITY, Math.max(0, base + s)), 0) / signal.length;
     base += TARGET_MEAN - mean;
   }
-  return rows.map((row, i) => ({ ...row, occupancy: Math.round(Math.min(CAPACITY, Math.max(0, base + signal[i]))) }));
+  return rows.map((row, i) => {
+    const demand = Math.round(Math.max(0, base + signal[i]));
+    return { ...row, demand, occupancy: Math.min(CAPACITY, demand) };
+  });
 }

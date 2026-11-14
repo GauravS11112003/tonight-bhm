@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "@/components/Nav";
 import WeekStrip from "@/components/WeekStrip";
+import ModelArena from "@/components/ModelArena";
 import CountUp from "@/components/CountUp";
 import LiveHero from "@/components/LiveHero";
 import { buildWeek, type Night } from "@/lib/plan";
@@ -154,6 +155,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
             <Context />
           </div>
         </div>
+
+        <ModelArena />
 
         <footer className="mt-16 flex flex-wrap items-end justify-between gap-6">
           <p className="display text-[52px] leading-none text-accent-ink sm:text-[76px]">See it coming.</p>
