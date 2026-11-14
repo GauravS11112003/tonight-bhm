@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import sitesJson from "@/data/sites.json";
 import { FALLBACKS, needWord, route, type AgeBand, type Gender, type Intake, type RankedSite, type Tonight } from "@/lib/routing/route";
 import { NEEDS } from "@/lib/intake/schema";
@@ -118,7 +118,25 @@ export default function RouteFlow({ tonight }: { tonight: Tonight }) {
   const intake: Intake | null = ready ? { ageBand: ageBand!, gender: gender!, needsPlaceTonight: placeTonight!, needs, flags } : null;
   const result = useMemo(() => (intake && step === 2 ? route(intake, SITES, tonight) : null), [intake, step, tonight]);
 
+  // The hub's insights count needs, not people. When the results appear, record one
+  // aggregate line: the confirmed need tags and the top site id. The server adds the date.
+  // The note, age, gender and health flags never leave this screen.
+  const recorded = useRef(false);
+  useEffect(() => {
+    if (!result || recorded.current) return;
+    recorded.current = true;
+    fetch("/api/intakes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ needs, topSite: result.ranked[0]?.site.id ?? null }) }).catch(() => {});
+  }, [result]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // A volunteer may text the person their own recommendation, once. The link opens the
+  // volunteer's own messaging app; the number is typed there and never touches this app.
+  const top = result?.ranked[0]?.site;
+  const sms = top
+    ? `sms:?&body=${encodeURIComponent(`Tonight: ${top.name}${top.address ? `, ${top.address}` : ""}${top.phone ? `. Call ${top.phone}` : ". Call 2-1-1 for the address"}. For housing: One Roof Coordinated Entry (205) 254-8833. Any time: call 2-1-1.`)}`
+    : null;
+
   function reset() {
+    recorded.current = false;
     setStep(0); setNote(""); setAge(null); setGender(null); setPlace(null);
     setFlags({ mobility: false, medication: false, sickNow: false }); setNeeds([]); setSuggested([]); setShowExcluded(false);
   }
@@ -129,7 +147,7 @@ export default function RouteFlow({ tonight }: { tonight: Tonight }) {
         <div>
           <h1 className="text-[36px] leading-[1.05] font-semibold tracking-[-0.03em] sm:text-[44px]">Route a person tonight</h1>
           <p className="mt-2 max-w-[620px] text-[17px] text-ink/80">
-            Three short steps at the front door. We never ask for a name, date of birth or ID. Tonight&apos;s low is <span className="tnum font-semibold">{tonight.lowF}°F</span>.
+            Three short steps wherever you meet them. We never ask for a name, date of birth or ID. Tonight&apos;s low is <span className="tnum font-semibold">{tonight.lowF}°F</span>.
           </p>
         </div>
         <ol className="flex gap-2" aria-label="Progress">
@@ -223,6 +241,13 @@ export default function RouteFlow({ tonight }: { tonight: Tonight }) {
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {result.ranked.map((r, i) => <SiteCard key={r.site.id} r={r} rank={i} />)}
           </div>
+
+          {sms && (
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+              <a href={sms} className="press flex min-h-11 items-center rounded-full bg-raised px-5 text-[15px] font-medium hover:bg-accent-track">Text them this recommendation</a>
+              <p className="max-w-[520px] text-sm text-muted">Opens your own messaging app with the top place filled in. You type their number there, once; this app never sees or stores it.</p>
+            </div>
+          )}
 
           <div className="mt-6 rounded-xl bg-accent-soft p-5">
             <h3 className="font-semibold text-accent-ink">Always offer</h3>
