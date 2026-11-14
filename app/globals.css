@@ -161,3 +161,7 @@ body { font-feature-settings: "ss01", "cv11"; text-rendering: optimizeLegibility
   .notify-row.is-sent .notify-sweep, .notify-row.is-sent .notify-check, .notify-row.is-sent .notify-done, .rail-dot.is-sent::after { animation: none !important; }
   .rail-dot.is-sent::after { display: none; }
 }
+
+/* On a phone the main nav is one row that scrolls sideways inside itself, never the page. */
+.nav-scroll { scrollbar-width: none; }
+.nav-scroll::-webkit-scrollbar { display: none; }

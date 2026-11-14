@@ -29,6 +29,27 @@ Claims the agent did **not** verify and the team should before demoing:
 - Whether Firehouse offers showers (not listed as a need it meets).
 - The staffing ratio (1 volunteer per 20 guests) and blanket ratio are assumptions.
 
+## Coordination hub update (Claude Code, Fable 5.2), 2026-11-14
+
+Built in one session on its own branch from the team's written hub spec. The framing (hub, four verbs, the formulas, the hard rules) is the team's; the agent wrote the code and chose the screens' design.
+
+| Area | Files | Notes |
+|---|---|---|
+| Asks | `lib/asks/index.ts`, `components/AsksBoard.tsx`, `IsoStack.tsx`, `AskFormulas.tsx`, `app/asks`, `app/asks/public`, `app/api/asks` | Spec formulas exactly. The agent chose: "people" = predicted + spill; a night is flagged when a rule fires or the forecast spills; only Firehouse gets asks because only it has a forecast; ask status lives in the volunteer store keyed by a stable id; the public page talks to its own API that returns statuses only. Isometric stacks are plain SVG, one block = a fixed number of units. |
+| One set of numbers | `lib/model/recommend.ts`, copy in `app/forecast`, `TeamBoard.tsx`, `VolunteerApp.tsx` | `planNight` now calls `lib/asks`, so volunteers are ÷ 25 and blankets × 1.5 everywhere (decision 18). This changes numbers the first build showed. |
+| Notify | `lib/notify/alerts.ts`, `components/NotifyQueue.tsx`, `app/notify`, `sendAlert` in `lib/volunteers/store.ts`, `TeamBoard.tsx` | Audience mapping, message templates and lead times are the agent's choices and are labeled assumptions. No SMS: no Twilio keys were present. |
+| Insights | `lib/insights/*`, `app/insights`, `app/api/intakes`, recording in `components/RouteFlow.tsx` | Simulated 14-day history (seed 311) with warmth made to rise, so the "rising need" is a property of the simulation. Suppression happens in `summarize` on the server. |
+| Hub home | `app/page.tsx`, `components/CityMap.tsx`, `HubTiles.tsx`, `lib/hub.ts`, `components/Nav.tsx` | Kept the 3D map as the base. On phones the map becomes a block in a scrolling page. Nav now lists the four verbs. |
+| Text a recommendation | `components/RouteFlow.tsx` | An `sms:` link that opens the volunteer's own messaging app; the number never enters this app. |
+| Tests | `tests/hub.test.ts` | 5 tests: asks quantities, mild night, confidential site, one alert per audience per night, "<5". |
+| Docs | `README.md`, `DECISIONS.md` 17–20, this section | |
+
+Not verified by the agent, for the team to check before demoing:
+- The multipliers (1.5, 3, 25, 3) and the alert lead times are assumptions.
+- No domestic-violence shelter is in `data/sites.json`. The `confidentialLocation` flag hides such a site from the map, the tonight strip, alert recipients and the public board, and is tested, but no real site uses it yet.
+- "findhelp" is named as a directory in UI copy on the team's instruction; the agent did not check it.
+- Left out: Twilio SMS, the One Roof weekly summary and Spanish strings (all stretch).
+
 ## What the team changed, rejected or rewrote
 
 _Fill this in as you go. Be specific: file, what the AI wrote, what you did instead, why._

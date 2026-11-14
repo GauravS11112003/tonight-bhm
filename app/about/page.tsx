@@ -2,6 +2,8 @@ import Nav from "@/components/Nav";
 import { COEFFICIENTS, HOLDOUT, MODEL, BAND_Z } from "@/lib/model/forecast";
 import { CAPACITY, SEED, TARGET_MEAN } from "@/lib/model/simulate";
 import { getForecast } from "@/lib/weather/nws";
+import { ASK_FORMULAS } from "@/lib/asks";
+import { HISTORY_DAYS, INTAKE_SEED, SUPPRESS_BELOW } from "@/lib/insights";
 
 export const dynamic = "force-dynamic";
 
@@ -69,6 +71,11 @@ export default async function About({ searchParams }: { searchParams: Promise<{ 
     ["Nightly occupancy history", "SIMULATED", `Two years, seed ${SEED}, calibrated to a mean of ${r1(TARGET_MEAN)} a night (29,509 ÷ 365).`],
     ["Model weights and backtest error", "Fitted on SIMULATED data", "They show the method works; real accuracy needs Firehouse's nightly counts."],
     ["Other sites' capacity and hours", "Unknown", "Stored as null and shown as “unverified — call”."],
+    ["Asks multipliers (blankets, water, volunteers, meals)", "Assumption", "Our starting ratios. Shown on the needs board as “assumption — confirm with shelter staff”."],
+    ["Alert lead times", "Assumption", "Donors two days ahead, volunteers the day before at noon, staff and warming stations the evening before."],
+    ["Intake history on the insights page", "SIMULATED", `${HISTORY_DAYS} days, seed ${INTAKE_SEED}, with warmth made to rise. It shows the method, not Birmingham's real needs.`],
+    ["Routings recorded today", "Real", "One aggregate line per routing done in this app: date, confirmed need tags, top site id."],
+    ["Outreach reports marked SAMPLE", "SAMPLE", "Demo data at public landmarks, drawn in orange on the map."],
   ];
 
   return (
@@ -77,7 +84,7 @@ export default async function About({ searchParams }: { searchParams: Promise<{ 
       <main className="mx-auto max-w-[1080px] px-4 pt-6 pb-20 sm:px-8">
         <h1 className="rise text-[36px] leading-[1.05] font-semibold tracking-[-0.03em] sm:text-[48px]">How the forecast works</h1>
         <p className="rise mt-3 max-w-[680px] text-[18px] leading-relaxed text-ink/85" style={{ ["--d" as string]: "80ms" }}>
-          We predict how many people will need a bed at one shelter on one night. Never anything about a person. Rules the shelters already use always win over the model.
+          We predict how many people will need a bed at one shelter on one night. Never anything about a person. Rules the shelters already use always win over the model. Asks, alerts and insights are built on top of that forecast.
         </p>
 
         <section className="card rise mt-8 p-5 sm:p-7" style={{ ["--d" as string]: "120ms" }} aria-labelledby="f-h">
@@ -134,6 +141,33 @@ export default async function About({ searchParams }: { searchParams: Promise<{ 
                 ))}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <section className="card rise mt-6 p-5 sm:p-6" style={{ ["--d" as string]: "190ms" }} aria-labelledby="hub-h">
+          <h2 id="hub-h" className="text-lg font-semibold">The coordination hub: asks, alerts and insights</h2>
+          <p className="mt-2 max-w-[760px] text-[15px] leading-relaxed text-ink/85">
+            Tonight BHM is a coordination layer, not a replacement. One Roof Coordinated Entry stays the housing path; findhelp and 2-1-1 stay the program directory. The hub adds foresight and action before the cold night. AI does one job here: turning an intake note into need tags a volunteer confirms. Asks and alerts are formulas and rules.
+          </p>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="rounded-lg bg-raised p-4">
+              <h3 className="font-semibold">Asks multipliers</h3>
+              <ul className="tnum mt-2 grid gap-1 text-[15px] text-ink/85">
+                <li>Blankets = people × {ASK_FORMULAS.blanketsPerPerson}, on nights below {ASK_FORMULAS.blanketBelowF}°F</li>
+                <li>Water = people × {ASK_FORMULAS.waterPerPerson}, on Heat Advisory days</li>
+                <li>Volunteers = people ÷ {ASK_FORMULAS.peoplePerVolunteer}, rounded up</li>
+                <li>Meals = people × {ASK_FORMULAS.mealsPerPerson}</li>
+              </ul>
+              <p className="mt-2 text-sm text-warm-ink">Assumptions — confirm with shelter staff. 100 people on a cold night gives 150 blankets and 4 volunteers.</p>
+            </div>
+            <div className="rounded-lg bg-raised p-4">
+              <h3 className="font-semibold">Small-cell suppression</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-ink/85">On the insights page, any group with fewer than {SUPPRESS_BELOW} intakes is shown as “&lt;{SUPPRESS_BELOW}” and its week-over-week change is not calculated, so a small count can never point at a person. The exact number is removed on the server.</p>
+            </div>
+            <div className="rounded-lg bg-raised p-4">
+              <h3 className="font-semibold">Who is notified, and who is not</h3>
+              <p className="mt-2 text-[15px] leading-relaxed text-ink/85">Alerts go to shelter staff, warming-station operators, volunteers and donors. Nobody experiencing homelessness is notified from a stored number, because none is stored. Sending is in-app only; SMS is not connected.</p>
+            </div>
           </div>
         </section>
 

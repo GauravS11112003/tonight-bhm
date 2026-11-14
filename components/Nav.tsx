@@ -46,13 +46,13 @@ export function ScenarioBanner({ active }: { active: string }) {
 export function NavLinks({ active, scenario }: { active: NavPath; scenario: boolean }) {
   const q = scenario ? "?scenario=arctic" : "";
   return (
-    <nav className="-mx-1 flex flex-wrap gap-x-0.5 gap-y-1 text-sm" aria-label="Main">
+    <nav className="nav-scroll -mx-1 flex w-full min-w-0 gap-x-0.5 gap-y-1 overflow-x-auto text-sm sm:w-auto sm:flex-wrap sm:overflow-visible" aria-label="Main">
       {LINKS.map((l) => (
         <Link
           key={l.href}
           href={`${l.href}${q}`}
           aria-current={active === l.href ? "page" : undefined}
-          className={`press rounded-full px-3 py-1.5 ${active === l.href ? "bg-raised font-medium text-ink" : "text-muted hover:text-ink"}`}
+          className={`press shrink-0 rounded-full px-3 py-2.5 sm:py-1.5 ${active === l.href ? "bg-raised font-medium text-ink" : "text-muted hover:text-ink"}`}
         >
           {l.label}
         </Link>

@@ -47,7 +47,7 @@ Each entry: what we decided, the alternative we rejected, and why. Newest at the
 **Rejected:** a weighted score.
 **Why:** a lexicographic order can be said in one sentence to a volunteer. Treating unknown capacity as 0 means we never assume room we can't see.
 
-## 10. Planning formulas
+## 10. Planning formulas (superseded by 18)
 **Decided:** volunteers = ⌈guests ÷ 20⌉ (5 on a usual 81-guest night); blankets = 1.5 × top of the 80% range on nights below 40°F, rounded up to 10; warming cost = nights × 2 stations × $2,500.
 **Rejected:** fitting staffing to data we don't have.
 **Why:** staff can check these by hand and change the constants in `lib/model/recommend.ts`. The ratios are our assumptions; Firehouse should set the real ones.
@@ -81,3 +81,25 @@ Each entry: what we decided, the alternative we rejected, and why. Newest at the
 **Decided:** MapLibre GL (v4) with OpenFreeMap's free vector tiles; buildings extruded from OpenStreetMap heights. Site coordinates were geocoded once from their street addresses with OpenStreetMap Nominatim and saved in `data/sites.json`; sites with unverified addresses get no pin.
 **Rejected:** Mapbox or Google Maps (keys, billing); hand-building a 3D city in three.js.
 **Why:** no key, no cost, real building data. Trade-off: the map needs internet; if tiles fail the panels still work. (The original brief said "no maps"; the team reversed that when widening the scope to the whole city.)
+
+## 17. Hub, not front door
+**Decided:** Tonight BHM is Birmingham's coordination hub for homelessness response: a layer over the systems that exist. One Roof Coordinated Entry stays the housing path; findhelp and 2-1-1 stay the program directory. The hub adds four verbs around the forecast: Understand (needs insights), Route (unchanged), Notify (alert queue) and Ask (needs board). The home page keeps the 3D city and floats the four verbs and tonight's places over it.
+**Rejected:** replacing those systems, or calling the product "the front door".
+**Why:** duplicating the system of record helps no one. A second intake or a second directory would split the data and the trust. What nobody has yet is foresight: knowing on Saturday what Tuesday night will need.
+
+## 18. Asks are formulas, not AI
+**Decided:** every request on the needs board is the shelter's predicted people for a flagged night times a fixed multiplier (`lib/asks`): blankets = people × 1.5 on nights below 40°F; water = people × 3 on Heat Advisory days; volunteers = ⌈people ÷ 25⌉; meals = people × 3. "People" is the model's expected demand including anyone beyond capacity. A night is flagged when an activation rule fires or the forecast passes capacity. Only Firehouse has a forecast, so only Firehouse gets asks.
+**Rejected:** letting an LLM write or size requests; guessing quantities for sites with no forecast.
+**Why:** auditable. A shelter director can check "104 people × 1.5 = 156 blankets" by hand and correct the multiplier. The multipliers are our assumptions and the board says so on every card.
+**This replaces decision 10's ratios.** The first build used volunteers = ⌈guests ÷ 20⌉ and blankets = 1.5 × the top of the range, rounded up to 10. The team's hub spec set ÷ 25 and × 1.5 exactly (100 people → 150 blankets, 4 volunteers). `lib/model/recommend.ts` now calls `lib/asks`, so the forecast table, the volunteer screens and the needs board show one number, not two. A usual 81-guest night now needs 4 volunteers, not 5. Warming cost is unchanged.
+
+## 19. Alerts are rules, one per audience per night
+**Decided:** the notify queue (`lib/notify/alerts.ts`) is built from fired activation rules, forecast spills and open asks. Each alert names its trigger and the forecast numbers behind it; several triggers on one night merge into one alert per audience. Audiences are shelter staff, warming-station operators, volunteers and donors. "Send" marks the alert sent in the app; no SMS leaves it. The staff board's "Activate cold-night plan" sends the same queued volunteer alert rather than a second one.
+**Rejected:** AI-written alerts; texting people experiencing homelessness from a stored number.
+**Why:** an alert that moves staff and money must be traceable to a rule. And we store no guest phone numbers, by design: a volunteer may text a person their own recommendation once from the routing screen, through the volunteer's own messaging app, so the number never touches this app. Lead times (donors two days ahead, volunteers the day before, staff the evening before) are assumptions.
+
+## 20. Small-cell suppression on insights
+**Decided:** the insights page shows aggregate counts of confirmed need tags. Any group with fewer than 5 intakes displays as "<5", its week-over-week change is not calculated, and the exact number is removed on the server before the page is sent. A routing records one line: the date, the confirmed need tags and the top site id. No note, age, gender, device id or time of day. `/api/intakes` returns a count only.
+**Rejected:** a table of intakes; exact small counts; storing the intake form.
+**Why:** "2 people needed medical help on Tuesday at one shelter" can identify someone. A total cannot. One exception, stated plainly: the hub's "people routed today" is a single running total with no breakdown, shown exactly so volunteers can see their work count.
+**Honesty note:** the 14 days of intake history are SIMULATED (seed 311) and labeled wherever they appear; only today's routings are real.
