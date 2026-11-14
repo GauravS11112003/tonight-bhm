@@ -134,7 +134,7 @@ export default function LiveHero({ day, q, scenario }: { day: ForecastDay; q: st
 
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <Link href={`/route${q}`} className="press rounded-full bg-accent px-6 py-3 text-[15px] font-semibold text-white hover:bg-accent-ink">Route a person tonight</Link>
-            {!scenario && <Link href="/?scenario=arctic" className="press rounded-full px-5 py-3 text-[15px] font-medium" style={{ background: dark ? "rgba(255,255,255,0.14)" : "var(--surface)" }}>Arctic-front scenario</Link>}
+            {!scenario && <Link href="/forecast?scenario=arctic" className="press rounded-full px-5 py-3 text-[15px] font-medium" style={{ background: dark ? "rgba(255,255,255,0.14)" : "var(--surface)" }}>Arctic-front scenario</Link>}
           </div>
         </div>
 

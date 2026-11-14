@@ -17,3 +17,13 @@ describe("volunteer store", () => {
     expect(done.requests[0]).toMatchObject({ status: "resolved", reply: "On the way" });
   });
 });
+
+describe("area reports", () => {
+  it("rounds the location to the grid before storing, and keeps no person-level fields", () => {
+    const s = apply(empty, { action: "report", lat: 33.51234, lng: -86.80456, count: 3, needs: ["blankets"], note: "" });
+    const r = s.reports![0];
+    expect(r.lat).toBeCloseTo(33.513, 3);
+    expect(r.lng).toBeCloseTo(-86.805, 3);
+    expect(Object.keys(r).sort()).toEqual(["at", "count", "id", "lat", "lng", "needs", "note"]);
+  });
+});

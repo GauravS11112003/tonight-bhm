@@ -19,8 +19,24 @@ export type HelpRequest = {
   id: string; type: (typeof REQUEST_TYPES)[number]; note: string; urgent: boolean;
   name: string; deviceId: string; status: "open" | "resolved"; reply: string; createdAt: string;
 };
+// An outreach report is about an AREA, never a person: a head count and needs,
+// with the location rounded to roughly three blocks. No names, no photos.
+export const REPORT_NEEDS = ["blankets", "food", "medical", "transport"] as const;
+export type AreaReport = { id: string; lat: number; lng: number; count: number; needs: (typeof REPORT_NEEDS)[number][]; note: string; at: string; sample?: boolean };
+export const GRID = 0.003; // degrees, about 300 m
+export const snap = (v: number) => Math.round(v / GRID) * GRID;
+export const REPORT_TTL_MS = 24 * 60 * 60 * 1000;
+// SAMPLE reports for the demo, at public landmarks. Always labeled as sample in the UI.
+export const SAMPLE_REPORTS: Omit<AreaReport, "id" | "at">[] = [
+  { lat: 33.5207766, lng: -86.8099219, count: 6, needs: ["blankets", "food"], note: "Sample: Linn Park", sample: true },
+  { lat: 33.5096842, lng: -86.8098908, count: 3, needs: ["blankets"], note: "Sample: Railroad Park", sample: true },
+  { lat: 33.5163287, lng: -86.8134594, count: 4, needs: ["food", "medical"], note: "Sample: Kelly Ingram Park", sample: true },
+  { lat: 33.5005419, lng: -86.7963992, count: 2, needs: ["transport"], note: "Sample: Five Points South", sample: true },
+  { lat: 33.5126182, lng: -86.8072537, count: 5, needs: ["blankets", "transport"], note: "Sample: near the Intermodal station", sample: true },
+];
+
 export type Alert = { message: string; at: string };
-export type Store = { signups: Signup[]; requests: HelpRequest[]; alert?: Alert | null };
+export type Store = { signups: Signup[]; requests: HelpRequest[]; alert?: Alert | null; reports?: AreaReport[] };
 
 const name = z.string().trim().min(1).max(24);
 const deviceId = z.string().min(6).max(64);
@@ -30,6 +46,9 @@ export const Action = z.discriminatedUnion("action", [
   z.object({ action: z.literal("request"), type: z.enum(REQUEST_TYPES), note: z.string().trim().max(400), urgent: z.boolean(), name, deviceId }),
   z.object({ action: z.literal("broadcast"), message: z.string().trim().min(1).max(200) }),
   z.object({ action: z.literal("clear") }),
+  z.object({ action: z.literal("report"), lat: z.number().min(33.3).max(33.7), lng: z.number().min(-87.1).max(-86.5), count: z.number().int().min(1).max(50), needs: z.array(z.enum(REPORT_NEEDS)).max(4), note: z.string().trim().max(200) }),
+  z.object({ action: z.literal("sampleReports") }),
+  z.object({ action: z.literal("clearReports") }),
   z.object({ action: z.literal("resolve"), id: z.string(), reply: z.string().trim().max(400) }),
 ]);
 export type Action = z.infer<typeof Action>;
@@ -51,6 +70,13 @@ export function apply(store: Store, a: Action, now = new Date().toISOString()): 
       return { ...store, alert: { message: a.message, at: now } };
     case "clear":
       return { ...store, alert: null };
+    case "report":
+      // Round the location before it is ever stored.
+      return { ...store, reports: [{ id: newId(), lat: snap(a.lat), lng: snap(a.lng), count: a.count, needs: a.needs, note: a.note, at: now }, ...(store.reports ?? [])] };
+    case "sampleReports":
+      return { ...store, reports: [...(store.reports ?? []).filter((r) => !r.sample), ...SAMPLE_REPORTS.map((r) => ({ ...r, id: newId(), at: now }))] };
+    case "clearReports":
+      return { ...store, reports: [] };
     case "resolve":
       return { ...store, requests: store.requests.map((r) => (r.id === a.id ? { ...r, status: "resolved", reply: a.reply } : r)) };
   }

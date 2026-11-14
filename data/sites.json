@@ -5,18 +5,40 @@
     "type": "shelter",
     "capacity": 100,
     "eligibility": [
-      { "field": "gender", "op": "in", "value": ["man"], "label": "Serves men" },
-      { "field": "ageBand", "op": "in", "value": ["18-24", "25-54", "55+"], "label": "Serves adults 18+" }
+      {
+        "field": "gender",
+        "op": "in",
+        "value": [
+          "man"
+        ],
+        "label": "Serves men"
+      },
+      {
+        "field": "ageBand",
+        "op": "in",
+        "value": [
+          "18-24",
+          "25-54",
+          "55+"
+        ],
+        "label": "Serves adults 18+"
+      }
     ],
     "opens": "nightly",
     "hours": null,
-    "meets": ["shelter_tonight", "warmth", "food"],
+    "meets": [
+      "shelter_tonight",
+      "warmth",
+      "food"
+    ],
     "lowBarrier": true,
     "address": "626 2nd Ave N, Birmingham, AL 35203",
     "phone": "(205) 252-9571",
     "sourceUrl": "https://firehouseshelter.com/the-emergency-shelter-operation/",
     "verifiedAt": "2026-11-14",
-    "notes": "Low-barrier emergency shelter. Check-in time not verified; call ahead."
+    "notes": "Low-barrier emergency shelter. Check-in time not verified; call ahead.",
+    "lat": 33.5065052,
+    "lng": -86.8251468
   },
   {
     "id": "firehouse-day",
@@ -25,15 +47,28 @@
     "capacity": null,
     "eligibility": [],
     "opens": "schedule-or-rule:firehouse-day-extra",
-    "schedule": { "days": [0, 1, 3, 4, 6], "hours": "2–5 p.m." },
+    "schedule": {
+      "days": [
+        0,
+        1,
+        3,
+        4,
+        6
+      ],
+      "hours": "2–5 p.m."
+    },
     "hours": "2–5 p.m. Mon, Wed, Thu, Sat, Sun, plus extra days for heat advisories or lows below 40°F",
-    "meets": ["warmth"],
+    "meets": [
+      "warmth"
+    ],
     "lowBarrier": true,
     "address": "626 2nd Ave N, Birmingham, AL 35203",
     "phone": "(205) 252-9571",
     "sourceUrl": "https://firehouseshelter.com/?p=14",
     "verifiedAt": "2026-11-14",
-    "notes": "Daytime only. Not an overnight bed."
+    "notes": "Daytime only. Not an overnight bed.",
+    "lat": 33.5065052,
+    "lng": -86.8251468
   },
   {
     "id": "jimmie-hale-warming",
@@ -43,13 +78,18 @@
     "eligibility": [],
     "opens": "rule:warming-station-likely",
     "hours": "6 p.m.–7 a.m. on city-announced freezing nights",
-    "meets": ["shelter_tonight", "warmth"],
+    "meets": [
+      "shelter_tonight",
+      "warmth"
+    ],
     "lowBarrier": true,
     "address": "3420 2nd Ave N, Birmingham, AL",
     "phone": null,
     "sourceUrl": "https://birminghamwatch.org/2026/01/30/warming-stations-open-as-birmingham-settles-in-for-a-deep-freeze/",
     "verifiedAt": "2026-11-14",
-    "notes": "Has served men, women and children. The city announces each opening; confirm before sending someone."
+    "notes": "Has served men, women and children. The city announces each opening; confirm before sending someone.",
+    "lat": 33.5249899,
+    "lng": -86.7862995
   },
   {
     "id": "pathways-warming",
@@ -60,13 +100,18 @@
     "eligibilityUnverified": true,
     "opens": "rule:warming-station-likely",
     "hours": null,
-    "meets": ["shelter_tonight", "warmth"],
+    "meets": [
+      "shelter_tonight",
+      "warmth"
+    ],
     "lowBarrier": null,
     "address": null,
     "phone": null,
     "sourceUrl": "https://birminghamwatch.org/2026/01/30/warming-stations-open-as-birmingham-settles-in-for-a-deep-freeze/",
     "verifiedAt": "2026-11-14",
-    "notes": "One of the two official warming stations. Hours, address and eligibility unverified — call."
+    "notes": "One of the two official warming stations. Hours, address and eligibility unverified — call.",
+    "lat": null,
+    "lng": null
   },
   {
     "id": "first-light",
@@ -74,17 +119,28 @@
     "type": "shelter",
     "capacity": null,
     "eligibility": [
-      { "field": "gender", "op": "in", "value": ["woman"], "label": "Serves women" }
+      {
+        "field": "gender",
+        "op": "in",
+        "value": [
+          "woman"
+        ],
+        "label": "Serves women"
+      }
     ],
     "opens": "nightly",
     "hours": null,
-    "meets": ["shelter_tonight"],
+    "meets": [
+      "shelter_tonight"
+    ],
     "lowBarrier": null,
     "address": null,
     "phone": "(205) 323-4277",
     "sourceUrl": null,
     "verifiedAt": "2026-11-14",
-    "notes": "Shelter for women. Capacity and hours unverified — call."
+    "notes": "Shelter for women. Capacity and hours unverified — call.",
+    "lat": null,
+    "lng": null
   },
   {
     "id": "one-roof",
@@ -94,12 +150,16 @@
     "eligibility": [],
     "opens": "pathway",
     "hours": null,
-    "meets": ["housing_longterm"],
+    "meets": [
+      "housing_longterm"
+    ],
     "lowBarrier": null,
     "address": null,
     "phone": "(205) 254-8833",
     "sourceUrl": null,
     "verifiedAt": "2026-11-14",
-    "notes": "Housing pathway, not a bed. Always offered as a next step."
+    "notes": "Housing pathway, not a bed. Always offered as a next step.",
+    "lat": null,
+    "lng": null
   }
 ]

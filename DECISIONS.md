@@ -71,3 +71,13 @@ Each entry: what we decided, the alternative we rejected, and why. Newest at the
 **Decided:** "Activate cold-night plan" writes one alert into the volunteer store; phones pick it up on their next poll (every 4 seconds) and show a full-screen prompt to sign up.
 **Rejected:** push notifications or SMS.
 **Why:** push needs installed apps and permissions, SMS needs a paid account. Polling works on any phone with the page open, which is enough to prove the loop.
+
+## 15. Citywide map; reports are areas, never people
+**Decided:** the landing page is a 3D map of Birmingham. Volunteers can report people seen outside as an **area**: a head count and needs, with the location rounded to a ~300 m grid before it is stored, no names or photos, shown for 24 hours only.
+**Rejected:** a pin per person showing where individuals live or sleep.
+**Why:** a map of where specific unhoused people sleep can be used to harass or displace them, and it breaks our own rule of never tracking an individual (decision 4). Outreach teams need to know where to send blankets and a van, which an area and a count answers. Sample reports for demos sit at public landmarks and are labeled SAMPLE.
+
+## 16. MapLibre with OpenFreeMap tiles
+**Decided:** MapLibre GL (v4) with OpenFreeMap's free vector tiles; buildings extruded from OpenStreetMap heights. Site coordinates were geocoded once from their street addresses with OpenStreetMap Nominatim and saved in `data/sites.json`; sites with unverified addresses get no pin.
+**Rejected:** Mapbox or Google Maps (keys, billing); hand-building a 3D city in three.js.
+**Why:** no key, no cost, real building data. Trade-off: the map needs internet; if tiles fail the panels still work. (The original brief said "no maps"; the team reversed that when widening the scope to the whole city.)

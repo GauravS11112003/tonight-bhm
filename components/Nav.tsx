@@ -15,10 +15,11 @@ export function Mark({ size = 28 }: { size?: number }) {
 const fmtTime = (iso: string) =>
   new Date(iso).toLocaleString("en-US", { timeZone: "America/Chicago", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
-export default function Nav({ active, scenario, source }: { active: "/" | "/route" | "/team" | "/about"; scenario: boolean; source?: ForecastSource }) {
+export default function Nav({ active, scenario, source }: { active: "/" | "/forecast" | "/route" | "/team" | "/about"; scenario: boolean; source?: ForecastSource }) {
   const q = scenario ? "?scenario=arctic" : "";
   const links = [
-    { href: "/", label: "Forecast" },
+    { href: "/", label: "City map" },
+    { href: "/forecast", label: "Forecast" },
     { href: "/route", label: "Route a person" },
     { href: "/team", label: "Volunteers" },
     { href: "/about", label: "Method & data" },

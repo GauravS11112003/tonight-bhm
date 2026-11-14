@@ -57,6 +57,8 @@ export type Site = {
   meets: Need[];
   lowBarrier: boolean | null;
   address: string | null;
+  lat: number | null; // geocoded from the address via OpenStreetMap; null when the address is unverified
+  lng: number | null;
   phone: string | null;
   sourceUrl: string | null; // null = no public source found yet
   verifiedAt: string;

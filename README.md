@@ -42,7 +42,8 @@ Every live fetch saves `data/cached_forecast.json`. If NWS can't be reached, the
 
 ## Pages
 
-- `/` Forecast dashboard: tonight's answer, 3D bed floor, 7-night strip with lows, rules, predicted occupancy, range, capacity line and spill; what to prepare; Birmingham facts.
+- `/` **City map.** A 3D map of Birmingham (MapLibre + free OpenFreeMap tiles, needs internet): every building at its real height, each located shelter with tonight's status, and volunteers' outreach reports as columns. "Report people outside" logs an area (head count and needs), rounded to about 300 m, with no names, expiring after 24 hours. "Load SAMPLE reports" adds clearly labeled sample data for demos.
+- `/forecast` Forecast dashboard: tonight's answer, 3D bed floor, 7-night strip with lows, rules, predicted occupancy, range, capacity line and spill; what to prepare; Birmingham facts.
 - `/route` Intake → confirm needs → where to go, with excluded sites and why.
 - `/volunteer` Mobile app for volunteers: tonight's briefing, sign up for shifts, send requests to staff, tap-to-call resources. Open it on a phone on the same wifi with `npm run dev -- -H 0.0.0.0` and `http://<your-laptop-ip>:3000/volunteer`.
 - `/team` Staff board: forecast need vs volunteers signed up for each night, and the request inbox. Updates every few seconds.

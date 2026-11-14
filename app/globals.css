@@ -87,3 +87,15 @@ body { font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 @keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.06); } 100% { transform: scale(1); } }
 .pop { animation: pop 0.6s ease-out; }
 @media (prefers-reduced-motion: reduce) { .shake, .alarm, .pop { animation: none !important; } }
+
+/* City map pins */
+.site-pin { display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); font: 600 14px var(--font-sans); color: var(--text); cursor: pointer; white-space: nowrap; transition: transform 160ms ease; }
+.site-pin:hover { transform: scale(1.06); }
+.site-pin i { width: 10px; height: 10px; border-radius: 50%; }
+.site-pin span { font-weight: 500; color: var(--muted); font-variant-numeric: tabular-nums; }
+.report-pin { position: relative; width: 34px; height: 34px; border-radius: 50%; background: var(--negative); color: #fff; display: grid; place-items: center; font: 600 15px var(--font-sans); }
+.report-pin.sample { background: #e08a3c; }
+.report-pin.draft { background: var(--accent); }
+.report-pin::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: ping 2s ease-out infinite; z-index: -1; }
+@keyframes ping { from { transform: scale(1); opacity: 0.55; } to { transform: scale(2.6); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .report-pin::after { animation: none; } }
