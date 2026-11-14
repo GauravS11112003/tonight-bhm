@@ -1,0 +1,27 @@
+[
+  {
+    "id": "firehouse-day-extra",
+    "label": "Firehouse day shelter extra day",
+    "short": "Day shelter extra day",
+    "kind": "policy",
+    "match": "any",
+    "conditions": [
+      { "field": "lowF", "op": "<", "value": 40 },
+      { "field": "alerts", "op": "includes", "value": "Heat Advisory" }
+    ],
+    "source": "https://firehouseshelter.com/?p=14",
+    "note": "Firehouse's published policy."
+  },
+  {
+    "id": "warming-station-likely",
+    "label": "City warming station likely",
+    "short": "Warming station likely",
+    "kind": "assumption",
+    "match": "any",
+    "conditions": [
+      { "field": "lowF", "op": "<=", "value": 32 }
+    ],
+    "source": "https://birminghamwatch.org/2026/01/30/warming-stations-open-as-birmingham-settles-in-for-a-deep-freeze/",
+    "note": "Assumption based on news coverage. The city decides per event."
+  }
+]

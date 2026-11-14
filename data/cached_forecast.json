@@ -1,0 +1,70 @@
+{
+  "fetchedAt": "2026-11-14T19:37:24.942Z",
+  "days": [
+    {
+      "date": "2026-11-14",
+      "name": "This Afternoon",
+      "lowF": 33,
+      "highF": 56,
+      "precipProb": 0,
+      "alerts": [
+        "Freeze Warning"
+      ],
+      "shortForecast": "Sunny"
+    },
+    {
+      "date": "2026-11-15",
+      "name": "Sunday",
+      "lowF": 36,
+      "highF": 60,
+      "precipProb": 0,
+      "alerts": [],
+      "shortForecast": "Widespread Frost then Mostly Sunny"
+    },
+    {
+      "date": "2026-11-16",
+      "name": "Monday",
+      "lowF": 35,
+      "highF": 62,
+      "precipProb": 0,
+      "alerts": [],
+      "shortForecast": "Patchy Frost then Mostly Sunny"
+    },
+    {
+      "date": "2026-11-17",
+      "name": "Tuesday",
+      "lowF": 37,
+      "highF": 66,
+      "precipProb": 0,
+      "alerts": [],
+      "shortForecast": "Patchy Frost then Sunny"
+    },
+    {
+      "date": "2026-11-18",
+      "name": "Wednesday",
+      "lowF": 42,
+      "highF": 69,
+      "precipProb": 0,
+      "alerts": [],
+      "shortForecast": "Sunny"
+    },
+    {
+      "date": "2026-11-19",
+      "name": "Thursday",
+      "lowF": 46,
+      "highF": 72,
+      "precipProb": 0,
+      "alerts": [],
+      "shortForecast": "Mostly Sunny"
+    },
+    {
+      "date": "2026-11-20",
+      "name": "Friday",
+      "lowF": 47,
+      "highF": 73,
+      "precipProb": 0.01,
+      "alerts": [],
+      "shortForecast": "Sunny"
+    }
+  ]
+}

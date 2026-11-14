@@ -1,0 +1,8 @@
+node_modules
+.next
+.env*.local
+.taste-skill
+next-env.d.ts
+*.tsbuildinfo
+data/volunteer_store.json
+.claude
