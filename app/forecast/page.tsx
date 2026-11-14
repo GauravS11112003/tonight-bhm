@@ -103,7 +103,7 @@ function Recommendations({ nights }: { nights: Night[] }) {
           </tbody>
         </table>
         <p className="mt-3 text-sm text-muted">
-          Volunteers = guests ÷ 20, rounded up (5 on a usual night). Blankets = 1.5 × top of the range on nights below 40°F, rounded up to 10.
+          Volunteers = predicted guests ÷ 25, rounded up (4 on a usual night). Blankets = 1.5 × predicted guests on nights below 40°F. The same formulas fill the needs board; the multipliers are assumptions to confirm with shelter staff.
         </p>
       </div>
     </section>

@@ -72,7 +72,7 @@ export default function TeamBoard({ nights, qr, url }: { nights: NightBrief[]; q
             );
           })}
         </ul>
-        <p className="mt-4 text-sm text-muted">Need = predicted guests ÷ 20, rounded up. The forecast sets the need; volunteers fill it from their phones.</p>
+        <p className="mt-4 text-sm text-muted">Need = predicted guests ÷ 25, rounded up (assumption — confirm with shelter staff). The forecast sets the need; volunteers fill it from their phones.</p>
       </section>
 
       <section className="card rise p-5 sm:p-6" style={{ ["--d" as string]: "100ms" }} aria-labelledby="req-h">

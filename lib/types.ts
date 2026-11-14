@@ -51,6 +51,7 @@ export type Site = {
   capacity: number | null;
   eligibility: EligibilityRule[];
   eligibilityUnverified?: boolean;
+  confidentialLocation?: boolean; // e.g. a domestic-violence shelter: never shown on a map, strip or public page
   opens: string; // "nightly" | "rule:<id>" | "schedule-or-rule:<id>" | "pathway"
   schedule?: { days: number[]; hours: string };
   hours: string | null;

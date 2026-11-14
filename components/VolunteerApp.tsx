@@ -144,7 +144,7 @@ export default function VolunteerApp({ nights, scenario }: { nights: NightBrief[
       {tab === "shifts" && (
         <main className="px-5">
           <h1 className="rise text-[32px] leading-tight font-semibold tracking-[-0.03em]">This week&apos;s shifts</h1>
-          <p className="rise mt-1 text-[15px] text-muted" style={{ ["--d" as string]: "60ms" }}>Need is one volunteer per 20 expected guests. Staff set the exact hours.</p>
+          <p className="rise mt-1 text-[15px] text-muted" style={{ ["--d" as string]: "60ms" }}>Need is one volunteer per 25 expected guests (assumption). Staff set the exact hours.</p>
           <ul className="mt-4 grid gap-3">
             {nights.map((n, i) => (
               <li key={n.date} className="rise rounded-3xl bg-surface p-5" style={{ ["--d" as string]: `${80 + i * 60}ms` }}>

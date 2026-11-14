@@ -1,14 +1,16 @@
+import { ASK_FORMULAS, expectedPeople, quantities } from "@/lib/asks";
 import type { ForecastDay, NightPrediction, RuleResult } from "@/lib/types";
 
 // Planning formulas. Deliberately simple so staff can check them by hand.
+// Staffing and blankets come from lib/asks, so the dashboard, the volunteer
+// screens and the needs board always show the same numbers.
 export const FORMULAS = {
-  // One volunteer per 20 guests, rounded up. A typical 81-guest night needs 5.
-  volunteersPerGuests: 20,
-  baselineVolunteers: 5,
-  // 1.5 blankets per expected guest on nights below 40°F, using the top of the range,
-  // so wet blankets can be swapped. Rounded up to the nearest 10.
-  blanketsPerGuest: 1.5,
-  blanketColdF: 40,
+  // One volunteer per 25 guests, rounded up. A typical 81-guest night needs 4.
+  volunteersPerGuests: ASK_FORMULAS.peoplePerVolunteer,
+  baselineVolunteers: 4,
+  // 1.5 blankets per expected guest on nights below 40°F.
+  blanketsPerGuest: ASK_FORMULAS.blanketsPerPerson,
+  blanketColdF: ASK_FORMULAS.blanketBelowF,
   // City cost per warming station per night (Birmingham Watch reporting).
   warmingCostPerNight: 2500,
   warmingStations: 2,
@@ -24,9 +26,7 @@ export type NightPlan = {
 };
 
 export function planNight(day: ForecastDay, p: NightPrediction, results: RuleResult[]): NightPlan {
-  const volunteers = Math.ceil((p.predicted + p.spill) / FORMULAS.volunteersPerGuests);
-  const cold = (day.lowF ?? 99) < FORMULAS.blanketColdF;
-  const blankets = cold ? Math.ceil((FORMULAS.blanketsPerGuest * (p.high + p.spill)) / 10) * 10 : 0;
+  const { volunteers, blankets } = quantities(expectedPeople(p), day.lowF, day.alerts);
   return {
     date: day.date,
     volunteers,

@@ -36,7 +36,11 @@ export const SAMPLE_REPORTS: Omit<AreaReport, "id" | "at">[] = [
 ];
 
 export type Alert = { message: string; at: string };
-export type Store = { signups: Signup[]; requests: HelpRequest[]; alert?: Alert | null; reports?: AreaReport[] };
+// Hub state. An ask's status and staff note are keyed by the ask's id (see lib/asks);
+// a sent alert is keyed by the alert's id (see lib/notify). Quantities are never stored:
+// they are recomputed from the forecast every time.
+export type AskState = { status: "open" | "pledged" | "fulfilled"; note: string; at: string };
+export type Store = { signups: Signup[]; requests: HelpRequest[]; alert?: Alert | null; reports?: AreaReport[]; asks?: Record<string, AskState>; sent?: Record<string, string> };
 
 const name = z.string().trim().min(1).max(24);
 const deviceId = z.string().min(6).max(64);
@@ -50,6 +54,11 @@ export const Action = z.discriminatedUnion("action", [
   z.object({ action: z.literal("sampleReports") }),
   z.object({ action: z.literal("clearReports") }),
   z.object({ action: z.literal("resolve"), id: z.string(), reply: z.string().trim().max(400) }),
+  z.object({ action: z.literal("askStatus"), id: z.string().max(120), status: z.enum(["open", "pledged", "fulfilled"]) }),
+  z.object({ action: z.literal("askNote"), id: z.string().max(120), note: z.string().trim().max(200) }),
+  // Marks a queued alert as sent. A volunteer alert for tonight may also go to every open phone.
+  z.object({ action: z.literal("sendAlert"), id: z.string().max(120), broadcast: z.string().trim().min(1).max(200).optional() }),
+  z.object({ action: z.literal("resetHub") }),
 ]);
 export type Action = z.infer<typeof Action>;
 
@@ -77,6 +86,19 @@ export function apply(store: Store, a: Action, now = new Date().toISOString()): 
       return { ...store, reports: [...(store.reports ?? []).filter((r) => !r.sample), ...SAMPLE_REPORTS.map((r) => ({ ...r, id: newId(), at: now }))] };
     case "clearReports":
       return { ...store, reports: [] };
+    case "askStatus": {
+      const prev = store.asks?.[a.id];
+      return { ...store, asks: { ...store.asks, [a.id]: { status: a.status, note: prev?.note ?? "", at: now } } };
+    }
+    case "askNote": {
+      const prev = store.asks?.[a.id];
+      return { ...store, asks: { ...store.asks, [a.id]: { status: prev?.status ?? "open", note: a.note, at: prev?.at ?? now } } };
+    }
+    case "sendAlert":
+      if (store.sent?.[a.id]) return store; // an alert is sent once
+      return { ...store, sent: { ...store.sent, [a.id]: now }, ...(a.broadcast ? { alert: { message: a.broadcast, at: now } } : {}) };
+    case "resetHub":
+      return { ...store, asks: {}, sent: {}, alert: null };
     case "resolve":
       return { ...store, requests: store.requests.map((r) => (r.id === a.id ? { ...r, status: "resolved", reply: a.reply } : r)) };
   }

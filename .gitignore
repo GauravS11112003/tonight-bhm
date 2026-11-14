@@ -6,3 +6,4 @@ next-env.d.ts
 *.tsbuildinfo
 data/volunteer_store.json
 .claude
+data/intake_events.json
