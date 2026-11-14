@@ -17,7 +17,6 @@ const person = (gender: "man" | "woman"): Intake => ({
   flags: { mobility: false, medication: false, sickNow: false },
 });
 
-const mix = (a: number[], b: number[], k: number) => `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * k)).join(",")})`;
 
 /** Wind made from filtered noise; louder and higher as it gets colder. */
 function useWind(on: boolean, k: number) {
@@ -67,9 +66,9 @@ export default function LiveHero({ day, q, scenario }: { day: ForecastDay; q: st
 
   const k = Math.min(1, Math.max(0, (52 - temp) / 40)); // 0 mild → 1 brutal
   useWind(sound, k);
-  const shade = Math.pow(k, 1.7); // stay light near freezing, go dark only on truly brutal nights
-  const dark = shade > 0.42;
-  const bg = mix([245, 248, 251], [6, 18, 38], shade);
+  // The hero stays white at every temperature; the cold shows in the number, the snow and the beds.
+  const dark = false;
+  const bg = "var(--surface)";
   const ink = dark ? "#ffffff" : "var(--text)";
   const over = p.spill >= 1;
 
@@ -92,7 +91,7 @@ export default function LiveHero({ day, q, scenario }: { day: ForecastDay; q: st
           </div>
 
           <div className="mt-4 flex items-end gap-5">
-            <p className="display tnum text-[136px] leading-[0.8] sm:text-[190px]" style={{ color: temp <= 32 ? "#ff8a8a" : temp < 40 ? "#ffb774" : ink }}>
+            <p className="display tnum text-[136px] leading-[0.8] sm:text-[190px]" style={{ color: temp <= 32 ? "var(--negative)" : temp < 40 ? "var(--warm)" : ink }}>
               {temp}°
             </p>
             <p className="tnum max-w-[300px] pb-2 text-xl leading-snug sm:text-[22px]" style={{ opacity: 0.9 }}>
