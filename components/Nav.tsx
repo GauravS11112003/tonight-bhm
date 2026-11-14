@@ -42,7 +42,7 @@ export default function Nav({ active, scenario, source }: { active: "/" | "/fore
         <div className="mx-auto flex max-w-[1320px] flex-wrap items-center gap-x-8 gap-y-3 px-4 pt-5 pb-2 sm:px-8">
           <Link href={`/${q}`} className="flex items-center gap-2.5" aria-label="Tonight BHM home">
             <Mark />
-            <span className="text-[17px] font-semibold tracking-[-0.01em]">Tonight BHM</span>
+            <span className="display text-[24px] leading-none">Tonight BHM</span>
           </Link>
           <nav className="flex gap-1 text-sm" aria-label="Main">
             {links.map((l) => (

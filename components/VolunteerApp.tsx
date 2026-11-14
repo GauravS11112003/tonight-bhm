@@ -107,7 +107,7 @@ export default function VolunteerApp({ nights, scenario }: { nights: NightBrief[
             <ClientCanvas kind="particles" lowF={t.lowF} />
             <div className="relative">
               <h1 id="vt-h" className="text-[17px] font-medium text-white/80">Tonight at Firehouse</h1>
-              <p className="tnum mt-2 text-[72px] leading-[0.95] font-semibold tracking-[-0.04em]">{t.lowF}°F</p>
+              <p className="display tnum mt-2 text-[96px] leading-[0.85]">{t.lowF}°F</p>
               <p className="tnum mt-3 text-xl leading-snug">Expect <strong className="font-semibold">{t.low}–{t.high} of 100 beds</strong> filled.{t.spill > 0 ? ` About ${t.spill} more people than beds.` : ""}</p>
               <div className="mt-4 flex flex-wrap gap-2 text-sm font-medium">
                 {t.alerts.map((a) => <span key={a} className="rounded-full bg-white/15 px-3 py-1">{a}</span>)}

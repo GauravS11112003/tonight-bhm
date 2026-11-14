@@ -67,8 +67,9 @@ export default function LiveHero({ day, q, scenario }: { day: ForecastDay; q: st
 
   const k = Math.min(1, Math.max(0, (52 - temp) / 40)); // 0 mild → 1 brutal
   useWind(sound, k);
-  const dark = k > 0.4;
-  const bg = mix([245, 248, 251], [6, 18, 38], k);
+  const shade = Math.pow(k, 1.7); // stay light near freezing, go dark only on truly brutal nights
+  const dark = shade > 0.42;
+  const bg = mix([245, 248, 251], [6, 18, 38], shade);
   const ink = dark ? "#ffffff" : "var(--text)";
   const over = p.spill >= 1;
 
@@ -82,7 +83,7 @@ export default function LiveHero({ day, q, scenario }: { day: ForecastDay; q: st
       <div className="relative grid items-center gap-6 lg:grid-cols-[1.05fr_1fr]">
         <div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 id="tonight-h" className="text-[44px] leading-[1.02] font-semibold tracking-[-0.035em] sm:text-[60px]">Tonight in Birmingham</h1>
+            <h1 id="tonight-h" className="text-[52px] leading-[1] sm:text-[72px]">Tonight in Birmingham</h1>
             {whatIf && (
               <button onClick={() => { setTemp(real); setRain(Math.round(day.precipProb * 100)); }} className="press rounded-full bg-warm px-3 py-1.5 text-sm font-semibold text-white">
                 WHAT IF — not the forecast · reset
@@ -91,7 +92,7 @@ export default function LiveHero({ day, q, scenario }: { day: ForecastDay; q: st
           </div>
 
           <div className="mt-4 flex items-end gap-5">
-            <p className="tnum text-[120px] leading-[0.85] font-semibold tracking-[-0.05em] sm:text-[168px]" style={{ color: temp <= 32 ? "#ff8a8a" : temp < 40 ? "#ffb774" : ink }}>
+            <p className="display tnum text-[136px] leading-[0.8] sm:text-[190px]" style={{ color: temp <= 32 ? "#ff8a8a" : temp < 40 ? "#ffb774" : ink }}>
               {temp}°
             </p>
             <p className="tnum max-w-[300px] pb-2 text-xl leading-snug sm:text-[22px]" style={{ opacity: 0.9 }}>

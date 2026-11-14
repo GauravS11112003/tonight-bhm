@@ -69,12 +69,13 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
         map.addLayer({
           id: "buildings-3d", type: "fill-extrusion", source: "openmaptiles", "source-layer": "building", minzoom: 12.5,
           paint: {
-            "fill-extrusion-color": ["interpolate", ["linear"], ["coalesce", ["get", "render_height"], 8], 0, "#e3ebf5", 40, "#c3d4ea", 120, "#8fb0dc", 220, "#4f82c4"],
+            "fill-extrusion-color": ["interpolate", ["linear"], ["coalesce", ["get", "render_height"], 8], 0, "#edf1f6", 30, "#d9e3ef", 90, "#b3c8e3", 180, "#7fa2d2", 260, "#3f6fb5"],
             "fill-extrusion-height": ["coalesce", ["get", "render_height"], 8],
             "fill-extrusion-base": ["coalesce", ["get", "render_min_height"], 0],
             "fill-extrusion-opacity": 0.9,
           },
         });
+        map.setLight({ anchor: "viewport", color: "#ffffff", intensity: 0.45, position: [1.4, 210, 35] });
         map.addSource("reports", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         map.addLayer({
           id: "report-columns", type: "fill-extrusion", source: "reports",
@@ -156,7 +157,7 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
   }
 
   const cold = (tonight.lowF ?? 99) < 40;
-  const panel = "pointer-events-auto rounded-2xl border border-line bg-surface";
+  const panel = "pointer-events-auto float-panel";
 
   return (
     <div className="relative h-dvh min-h-[640px] w-full overflow-hidden bg-raised">
@@ -170,7 +171,7 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
         {scenario && <p className="pointer-events-auto rounded-xl bg-warm px-4 py-2 text-sm font-medium text-white">SCENARIO — not the live forecast. <Link href="/" className="underline">Back to live</Link></p>}
 
         <header className={`${panel} rise flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5`}>
-          <Link href={`/${q}`} className="flex items-center gap-2.5"><Mark /><span className="text-[17px] font-semibold tracking-[-0.01em]">Tonight BHM</span></Link>
+          <Link href={`/${q}`} className="flex items-center gap-2.5"><Mark /><span className="display text-[24px] leading-none">Tonight BHM</span></Link>
           <nav className="flex flex-wrap gap-1 text-sm" aria-label="Main">
             {[["/forecast", "Forecast"], ["/route", "Route a person"], ["/team", "Volunteers"], ["/about", "Method & data"]].map(([h, l]) => (
               <Link key={h} href={`${h}${q}`} className="press rounded-full px-3 py-1.5 text-muted hover:bg-raised hover:text-ink">{l}</Link>
@@ -181,23 +182,23 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
 
         <div className="flex min-h-0 flex-1 flex-col justify-between gap-3 lg:flex-row lg:items-start">
           {/* Left: the city's night in one panel */}
-          <section className={`${panel} rise w-full max-w-[400px] p-5`} style={{ ["--d" as string]: "200ms" }} aria-labelledby="city-h">
-            <h1 id="city-h" className="text-[28px] leading-[1.05] font-semibold tracking-[-0.03em]">Birmingham, tonight</h1>
+          <section className={`${panel} rise w-full max-w-[410px] p-6`} style={{ ["--d" as string]: "200ms" }} aria-labelledby="city-h">
+            <h1 id="city-h" className="text-[40px] leading-[1]">Birmingham, tonight</h1>
             <div className="mt-3 flex items-end gap-4">
-              <p className="tnum text-[88px] leading-[0.85] font-semibold tracking-[-0.05em]" style={{ color: (tonight.lowF ?? 99) <= 32 ? "var(--negative)" : cold ? "var(--warm)" : "var(--accent-ink)" }}>{tonight.lowF}°</p>
+              <p className="display tnum text-[112px] leading-[0.8]" style={{ color: (tonight.lowF ?? 99) <= 32 ? "var(--negative)" : cold ? "var(--warm)" : "var(--accent-ink)" }}>{tonight.lowF}°</p>
               <p className="pb-1 text-[15px] leading-snug text-ink/85">
                 Overnight low.{tonight.alerts.length ? ` ${tonight.alerts.join(", ")}.` : ""} Firehouse expects <strong className="tnum">{tonight.low}–{tonight.high} of 100</strong> beds filled.
               </p>
             </div>
-            <dl className="mt-4 grid grid-cols-3 gap-2 text-center">
+            <dl className="mt-5 grid grid-cols-3 divide-x divide-line border-y border-line py-3">
               {[[people, "people reported outside"], [reports.length, "areas reported"], [`${signedUp}/${tonight.needed}`, "volunteers tonight"]].map(([n, l]) => (
-                <div key={l as string} className="rounded-xl bg-raised px-2 py-2.5">
-                  <dd className="tnum text-[26px] leading-none font-semibold text-accent-ink">{n}</dd>
-                  <dt className="mt-1 text-xs leading-tight text-muted">{l}</dt>
+                <div key={l as string} className="px-3 first:pl-0">
+                  <dd className="display tnum text-[38px] leading-none text-ink">{n}</dd>
+                  <dt className="label mt-1.5">{l}</dt>
                 </div>
               ))}
             </dl>
-            <ul className="mt-3 grid gap-1.5 text-sm">
+            <ul className="mt-4 grid gap-1.5 text-[14px]">
               <li className={`rounded-lg px-3 py-2 ${tonight.dayExtra ? "bg-warm-soft text-warm-ink" : "bg-raised text-muted"}`}><strong className="font-semibold">Firehouse day shelter extra day:</strong> {tonight.dayExtra ? "fires" : "not tonight"}</li>
               <li className={`rounded-lg px-3 py-2 ${tonight.warming ? "bg-warm text-white" : "bg-raised text-muted"}`}><strong className="font-semibold">City warming stations:</strong> {tonight.warming ? "likely (assumption)" : "not expected"}</li>
             </ul>
@@ -210,7 +211,7 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
           </section>
 
           {/* Right: whatever the user is doing now */}
-          <aside className={`${panel} rise w-full max-w-[380px] p-5`} style={{ ["--d" as string]: "320ms" }} aria-live="polite">
+          <aside className={`${panel} rise w-full max-w-[380px] p-6`} style={{ ["--d" as string]: "320ms" }} aria-live="polite">
             {reporting ? (
               <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
                 <h2 className="text-lg font-semibold">Report people outside</h2>
@@ -273,14 +274,14 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
 
         {/* Bottom: the week, at a glance */}
         <Link href={`/forecast${q}`} className={`${panel} rise press hidden items-end gap-4 px-5 py-3 sm:flex`} style={{ ["--d" as string]: "440ms" }}>
-          <span className="pb-1 text-sm font-semibold">Next 7 nights at Firehouse</span>
+          <span className="display pb-0.5 text-[22px] leading-none">Next 7 nights</span>
           <span className="flex flex-1 items-end gap-2">
             {week.map((n, i) => (
               <span key={n.date} className="flex flex-1 flex-col items-center gap-1">
-                <span className="relative block h-9 w-full overflow-hidden rounded-md bg-accent-track">
-                  <span className="grow absolute inset-x-0 bottom-0 block bg-accent" style={{ height: `${n.predicted}%`, ["--d" as string]: `${600 + i * 70}ms` }} />
+                <span className="relative block h-7 w-full overflow-hidden rounded-full bg-accent-track/70">
+                  <span className="grow-x absolute inset-y-0 left-0 block rounded-full bg-accent" style={{ width: `${n.predicted}%`, ["--d" as string]: `${600 + i * 70}ms` }} />
                 </span>
-                <span className="tnum text-xs text-muted">{n.label.slice(0, 3)} {n.lowF}° · {n.predicted}</span>
+                <span className="tnum text-xs text-muted">{n.label.slice(0, 3)} · {n.lowF}° · {n.predicted} beds</span>
               </span>
             ))}
           </span>

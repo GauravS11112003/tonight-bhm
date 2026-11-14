@@ -123,7 +123,7 @@ function Context() {
         {facts.map((f) => (
           <div key={f.label}>
             <dt className="sr-only">{f.label}</dt>
-            <dd className="text-[34px] leading-none font-semibold tracking-[-0.02em] text-accent-ink"><CountUp value={f.n} /></dd>
+            <dd className="display text-[46px] leading-none text-accent-ink"><CountUp value={f.n} /></dd>
             <dd className="mt-1.5 text-[15px] leading-snug text-ink/80">{f.label}</dd>
           </div>
         ))}
@@ -156,7 +156,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
         </div>
 
         <footer className="mt-16 flex flex-wrap items-end justify-between gap-6">
-          <p className="text-[40px] leading-none font-semibold tracking-[-0.03em] text-accent-ink sm:text-[56px]">See it coming.</p>
+          <p className="display text-[52px] leading-none text-accent-ink sm:text-[76px]">See it coming.</p>
           <p className="max-w-[560px] text-sm leading-relaxed text-muted">
             Weather: National Weather Service, api.weather.gov. Firehouse figures: firehouseshelter.com. Warming stations: Birmingham Watch, Jan 30 2026.
             Bed predictions are aggregate, per shelter per night, from a model trained on <strong className="text-ink">simulated</strong> history. Never about a person. <Link href={`/about${q}`} className="text-accent underline underline-offset-2">How it works</Link>
