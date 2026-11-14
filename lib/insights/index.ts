@@ -36,7 +36,7 @@ export function simulateIntakes(today: string, seed = INTAKE_SEED): IntakeEvent[
   const events: IntakeEvent[] = [];
   for (let d = HISTORY_DAYS; d >= 1; d--) {
     const k = HISTORY_DAYS - d; // 0 = oldest day
-    const p: Record<Need, number> = { shelter_tonight: 0.6 + 0.006 * k, warmth: 0.3 + 0.02 * k, food: 0.5, medical: 0.13, showers: 0.1, housing_longterm: 0.26 - 0.004 * k };
+    const p: Record<Need, number> = { shelter_tonight: 0.6 + 0.006 * k, warmth: 0.34 + 0.011 * k, food: 0.5, medical: 0.13, showers: 0.1, housing_longterm: 0.26 - 0.004 * k };
     const n = 30 + Math.floor(rng() * 14);
     for (let i = 0; i < n; i++) {
       const needs = NEEDS.filter((need) => rng() < p[need]);

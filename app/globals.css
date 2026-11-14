@@ -116,3 +116,10 @@ body { font-feature-settings: "ss01", "cv11"; text-rendering: optimizeLegibility
 .report-pin { box-shadow: 0 0 0 3px rgba(255,255,255,0.9); font-size: 14px; }
 .maplibregl-ctrl-group { border-radius: 14px !important; box-shadow: 0 8px 24px -12px rgba(14,26,43,0.3) !important; overflow: hidden; }
 .maplibregl-ctrl-attrib { font-size: 10px; border-radius: 10px 0 0 0; }
+
+/* Hub tiles: a floating panel that lifts a little when it is about to be followed. */
+.hub-tile { transition: transform 220ms cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 220ms ease; }
+.hub-tile:hover { transform: translateY(-3px); box-shadow: 0 1px 2px rgba(14,26,43,0.05), 0 26px 56px -20px rgba(14,26,43,0.36); }
+.hub-tile:active { transform: translateY(0) scale(0.985); }
+@media (prefers-reduced-motion: reduce) { .hub-tile, .hub-tile:hover, .hub-tile:active { transition: none; transform: none; } }
+.hub-tile.rise { animation-fill-mode: backwards; }

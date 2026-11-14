@@ -5,15 +5,15 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Map as MLMap, Marker, GeoJSONSource } from "maplibre-gl";
 import ClientCanvas from "@/components/ClientCanvas";
-import { Mark } from "@/components/Nav";
+import HubTiles, { type HubData } from "@/components/HubTiles";
+import { Mark, NavLinks, NavStatus } from "@/components/Nav";
+import type { TonightSite } from "@/lib/hub";
+import type { ForecastSource } from "@/lib/types";
 import { useVolunteerStore } from "@/components/useVolunteerStore";
 import { REPORT_NEEDS, REPORT_TTL_MS, snap, type AreaReport } from "@/lib/volunteers/store";
 import type { NightBrief } from "@/lib/volunteers/nights";
 
-export type MapSite = {
-  id: string; name: string; short: string; lat: number | null; lng: number | null;
-  status: "open" | "likely" | "closed"; line: string; phone: string | null; address: string | null; beds?: string;
-};
+export type MapSite = TonightSite;
 
 const DOWNTOWN: [number, number] = [-86.8104, 33.5145];
 const NEED_LABEL: Record<(typeof REPORT_NEEDS)[number], string> = { blankets: "Blankets", food: "Food", medical: "Medical help", transport: "A ride to shelter" };
@@ -25,7 +25,8 @@ function square(lng: number, lat: number, half = 0.00045) {
   return [[[lng - dx, lat - half], [lng + dx, lat - half], [lng + dx, lat + half], [lng - dx, lat + half], [lng - dx, lat - half]]];
 }
 
-export default function CityMap({ tonight, week, sites, scenario }: { tonight: NightBrief; week: NightBrief[]; sites: MapSite[]; scenario: boolean }) {
+/** The hub home: the city in 3D, with the four verbs and tonight's places floating over it. */
+export default function CityMap({ tonight, sites, scenario, source, hub, fired }: { tonight: NightBrief; sites: MapSite[]; scenario: boolean; source: ForecastSource; hub: HubData; fired: string[] }) {
   const box = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MLMap | null>(null);
   const markers = useRef<Marker[]>([]);
@@ -43,7 +44,10 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
   // Only the last 24 hours. Old reports stop being true and should not linger on a map.
   const reports = useMemo(() => (store.reports ?? []).filter((r) => Date.now() - Date.parse(r.at) < REPORT_TTL_MS), [store.reports]);
   const people = reports.reduce((s, r) => s + r.count, 0);
-  const signedUp = store.signups.filter((s) => s.date === tonight.date).length;
+  const focus = (s: MapSite) => {
+    setSelected(s); setReporting(false);
+    if (s.lat !== null && s.lng !== null) mapRef.current?.flyTo({ center: [s.lng, s.lat], zoom: 16, pitch: 64, duration: 1800 });
+  };
   const reportingRef = useRef(false);
   reportingRef.current = reporting;
 
@@ -157,61 +161,54 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
   }
 
   const cold = (tonight.lowF ?? 99) < 40;
-  const panel = "pointer-events-auto float-panel";
+  const panel = "float-panel lg:pointer-events-auto";
 
   return (
-    <div className="relative h-dvh min-h-[640px] w-full overflow-hidden bg-raised">
-      <div className={`absolute inset-0 ${reporting ? "[&_canvas]:!cursor-crosshair" : ""}`}>
+    <div className="relative flex min-h-dvh flex-col bg-ground pb-4 lg:block lg:h-dvh lg:min-h-[760px] lg:overflow-hidden lg:bg-raised lg:pb-0">
+      <div className={`relative order-2 mt-3 h-[44dvh] min-h-[280px] overflow-hidden bg-raised lg:absolute lg:inset-0 lg:mt-0 lg:h-auto ${reporting ? "[&_canvas]:!cursor-crosshair" : ""}`}>
         <div ref={box} className="h-full w-full" aria-label="3D map of Birmingham showing shelters and outreach reports" role="application" />
+        {cold && <ClientCanvas kind="particles" lowF={tonight.lowF} />}
+        {failed && <p className="absolute inset-x-0 top-1/2 px-6 text-center text-muted">The map tiles could not load. Shelters and reports are still listed in the panels.</p>}
       </div>
-      {cold && <ClientCanvas kind="particles" lowF={tonight.lowF} />}
-      {failed && <p className="absolute inset-x-0 top-1/2 text-center text-muted">The map tiles could not load. Shelters and reports are still listed in the panels.</p>}
 
-      <div className="pointer-events-none absolute inset-0 flex flex-col gap-3 p-3 sm:p-4">
-        {scenario && <p className="pointer-events-auto rounded-xl bg-warm px-4 py-2 text-sm font-medium text-white">SCENARIO — not the live forecast. <Link href="/" className="underline">Back to live</Link></p>}
+      <div className="contents lg:pointer-events-none lg:absolute lg:inset-0 lg:flex lg:flex-col lg:gap-3 lg:p-4">
+        {scenario && (
+          <p className="order-0 bg-warm px-4 py-2.5 text-sm text-white lg:order-none lg:pointer-events-auto lg:rounded-xl">
+            <strong className="font-semibold">SCENARIO — not the live forecast.</strong> An arctic front overrides the next 3 nights. <Link href="/" className="font-medium underline underline-offset-2">Back to live forecast</Link>
+          </p>
+        )}
 
-        <header className={`${panel} rise flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5`}>
+        <header className={`${panel} rise order-1 mx-3 mt-3 flex flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 lg:order-none lg:m-0`}>
           <Link href={`/${q}`} className="flex items-center gap-2.5"><Mark /><span className="display text-[24px] leading-none">Tonight BHM</span></Link>
-          <nav className="flex flex-wrap gap-1 text-sm" aria-label="Main">
-            {[["/forecast", "Forecast"], ["/route", "Route a person"], ["/team", "Volunteers"], ["/about", "Method & data"]].map(([h, l]) => (
-              <Link key={h} href={`${h}${q}`} className="press rounded-full px-3 py-1.5 text-muted hover:bg-raised hover:text-ink">{l}</Link>
-            ))}
-          </nav>
-          <span className="tnum ml-auto rounded-full bg-positive-soft px-2.5 py-1 text-sm text-positive"><span className="breathe mr-1.5 inline-block size-1.5 rounded-full bg-positive align-middle" />Live NWS forecast</span>
+          <NavLinks active="/" scenario={scenario} />
+          <NavStatus active="/" scenario={scenario} source={source} />
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col justify-between gap-3 lg:flex-row lg:items-start">
-          {/* Left: the city's night in one panel */}
-          <section className={`${panel} rise w-full max-w-[410px] p-6`} style={{ ["--d" as string]: "200ms" }} aria-labelledby="city-h">
-            <h1 id="city-h" className="text-[40px] leading-[1]">Birmingham, tonight</h1>
-            <div className="mt-3 flex items-end gap-4">
-              <p className="display tnum text-[112px] leading-[0.8]" style={{ color: (tonight.lowF ?? 99) <= 32 ? "var(--negative)" : cold ? "var(--warm)" : "var(--accent-ink)" }}>{tonight.lowF}°</p>
+        <div className="contents lg:flex lg:min-h-0 lg:flex-1 lg:items-start lg:justify-between lg:gap-3">
+          {/* Left: what the hub is, and tonight in one figure */}
+          <section className={`${panel} rise order-3 mx-3 mt-3 p-5 lg:order-none lg:m-0 lg:w-full lg:max-w-[452px] lg:p-6`} style={{ ["--d" as string]: "200ms" }} aria-labelledby="hub-h">
+            <h1 id="hub-h" className="text-[32px] leading-[1.04] sm:text-[38px]"><span className="sr-only">Tonight BHM — </span>Birmingham&rsquo;s homelessness coordination hub</h1>
+            <div className="mt-4 flex items-end gap-4">
+              <p className="display tnum text-[92px] leading-[0.8] lg:text-[104px]" style={{ color: (tonight.lowF ?? 99) <= 32 ? "var(--negative)" : cold ? "var(--warm)" : "var(--accent-ink)" }}>{tonight.lowF}°</p>
               <p className="pb-1 text-[15px] leading-snug text-ink/85">
-                Overnight low.{tonight.alerts.length ? ` ${tonight.alerts.join(", ")}.` : ""} Firehouse expects <strong className="tnum">{tonight.low}–{tonight.high} of 100</strong> beds filled.
+                Tonight&rsquo;s low.{tonight.alerts.length ? ` ${tonight.alerts.join(", ")}.` : ""}{" "}
+                <strong className={`font-semibold ${fired.length ? "text-warm-ink" : ""}`}>{fired.length} activation{fired.length === 1 ? "" : "s"} active</strong>
+                {fired.length ? `: ${fired.join(", ").toLowerCase()}.` : "."}
               </p>
             </div>
-            <dl className="mt-5 grid grid-cols-3 divide-x divide-line border-y border-line py-3">
-              {[[people, "people reported outside"], [reports.length, "areas reported"], [`${signedUp}/${tonight.needed}`, "volunteers tonight"]].map(([n, l]) => (
-                <div key={l as string} className="px-3 first:pl-0">
-                  <dd className="display tnum text-[38px] leading-none text-ink">{n}</dd>
-                  <dt className="label mt-1.5">{l}</dt>
-                </div>
-              ))}
-            </dl>
-            <ul className="mt-4 grid gap-1.5 text-[14px]">
-              <li className={`rounded-lg px-3 py-2 ${tonight.dayExtra ? "bg-warm-soft text-warm-ink" : "bg-raised text-muted"}`}><strong className="font-semibold">Firehouse day shelter extra day:</strong> {tonight.dayExtra ? "fires" : "not tonight"}</li>
-              <li className={`rounded-lg px-3 py-2 ${tonight.warming ? "bg-warm text-white" : "bg-raised text-muted"}`}><strong className="font-semibold">City warming stations:</strong> {tonight.warming ? "likely (assumption)" : "not expected"}</li>
-            </ul>
+            <p className="mt-4 text-[14px] leading-relaxed text-muted">
+              A coordination layer, not a replacement. One Roof Coordinated Entry stays the housing path; findhelp and 2-1-1 stay the directory. The hub adds foresight and action before the cold night.
+            </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <button onClick={() => { setReporting(!reporting); setDraft(null); setSelected(null); }} aria-pressed={reporting} className={`press min-h-11 rounded-full px-5 text-[15px] font-semibold ${reporting ? "bg-negative text-white" : "bg-accent text-white hover:bg-accent-ink"}`}>
+              <Link href={`/route${q}`} className="press flex min-h-11 items-center rounded-full bg-accent px-5 text-[15px] font-semibold text-white hover:bg-accent-ink">Route a person</Link>
+              <button onClick={() => { setReporting(!reporting); setDraft(null); setSelected(null); }} aria-pressed={reporting} className={`press min-h-11 rounded-full px-5 text-[15px] font-medium ${reporting ? "bg-negative text-white" : "bg-raised hover:bg-accent-track"}`}>
                 {reporting ? "Cancel report" : "Report people outside"}
               </button>
-              <Link href={`/route${q}`} className="press flex min-h-11 items-center rounded-full bg-raised px-5 text-[15px] font-medium hover:bg-accent-track">Route a person</Link>
             </div>
           </section>
 
           {/* Right: whatever the user is doing now */}
-          <aside className={`${panel} rise w-full max-w-[380px] p-6`} style={{ ["--d" as string]: "320ms" }} aria-live="polite">
+          <aside className={`${panel} rise order-6 mx-3 mt-3 p-5 lg:order-none lg:m-0 lg:w-full lg:max-w-[360px] lg:p-6`} style={{ ["--d" as string]: "320ms" }} aria-live="polite">
             {reporting ? (
               <form onSubmit={(e) => { e.preventDefault(); submit(); }}>
                 <h2 className="text-lg font-semibold">Report people outside</h2>
@@ -219,15 +216,15 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
                 <div className="mt-3 flex items-center justify-between">
                   <span className="text-[15px] font-semibold">How many people?</span>
                   <div className="flex items-center gap-2">
-                    <button type="button" aria-label="Fewer" onClick={() => setCount(Math.max(1, count - 1))} className="press size-10 rounded-full bg-raised text-xl">−</button>
+                    <button type="button" aria-label="Fewer" onClick={() => setCount(Math.max(1, count - 1))} className="press size-11 rounded-full bg-raised text-xl">−</button>
                     <span className="tnum w-8 text-center text-xl font-semibold">{count}</span>
-                    <button type="button" aria-label="More" onClick={() => setCount(Math.min(50, count + 1))} className="press size-10 rounded-full bg-raised text-xl">+</button>
+                    <button type="button" aria-label="More" onClick={() => setCount(Math.min(50, count + 1))} className="press size-11 rounded-full bg-raised text-xl">+</button>
                   </div>
                 </div>
                 <fieldset className="mt-3"><legend className="text-[15px] font-semibold">What do they need?</legend>
                   <div className="mt-2 flex flex-wrap gap-2">
                     {REPORT_NEEDS.map((n) => (
-                      <button key={n} type="button" aria-pressed={needs.includes(n)} onClick={() => setNeeds(needs.includes(n) ? needs.filter((x) => x !== n) : [...needs, n])} className={`press min-h-10 rounded-full px-3.5 text-sm font-medium ${needs.includes(n) ? "bg-accent text-white" : "bg-raised"}`}>{NEED_LABEL[n]}</button>
+                      <button key={n} type="button" aria-pressed={needs.includes(n)} onClick={() => setNeeds(needs.includes(n) ? needs.filter((x) => x !== n) : [...needs, n])} className={`press min-h-11 rounded-full px-3.5 text-sm font-medium ${needs.includes(n) ? "bg-accent text-white" : "bg-raised"}`}>{NEED_LABEL[n]}</button>
                     ))}
                   </div>
                 </fieldset>
@@ -240,22 +237,22 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
               <div>
                 <div className="flex items-start justify-between gap-3">
                   <h2 className="text-lg font-semibold leading-snug">{selected.name}</h2>
-                  <button onClick={() => setSelected(null)} aria-label="Close" className="press size-8 shrink-0 rounded-full bg-raised">✕</button>
+                  <button onClick={() => setSelected(null)} aria-label="Close" className="press size-11 shrink-0 rounded-full bg-raised">✕</button>
                 </div>
                 <p className="mt-2 inline-block rounded-full px-2.5 py-1 text-sm font-medium text-white" style={{ background: STATUS[selected.status].color }}>{STATUS[selected.status].text}</p>
                 <p className="mt-2 text-[15px] leading-relaxed text-ink/85">{selected.line}</p>
                 {selected.beds && <p className="tnum mt-1 text-[15px] font-semibold">{selected.beds} beds predicted full</p>}
-                <p className="mt-1 text-sm text-muted">{selected.address}</p>
+                <p className="mt-1 text-sm text-muted">{selected.address ?? "Address unverified — call"}</p>
                 {selected.phone && <a href={`tel:${selected.phone.replace(/\D/g, "")}`} className="press tnum mt-3 inline-flex min-h-11 items-center rounded-full bg-accent-soft px-5 text-[15px] font-semibold text-accent-ink">Call {selected.phone}</a>}
               </div>
             ) : (
               <div>
                 <h2 className="text-lg font-semibold">Outreach reports, last 24 hours</h2>
-                {reports.length === 0 && <p className="mt-2 text-[15px] text-muted">No reports yet. Volunteers add them from the map; each one is an area, never a person.</p>}
-                <ul className="mt-2 grid max-h-[220px] gap-1.5 overflow-y-auto">
+                <p className="tnum mt-1 text-[15px] text-ink/85">{reports.length ? `${people} people across ${reports.length} area${reports.length === 1 ? "" : "s"}.` : "No reports yet. Volunteers add them from the map; each one is an area, never a person."}</p>
+                <ul className="mt-2 grid max-h-[176px] gap-1.5 overflow-y-auto">
                   {reports.map((r) => (
                     <li key={r.id}>
-                      <button onClick={() => mapRef.current?.flyTo({ center: [r.lng, r.lat], zoom: 16, pitch: 64, duration: 1600 })} className="press flex w-full items-center gap-3 rounded-xl bg-raised px-3 py-2 text-left hover:bg-accent-track">
+                      <button onClick={() => mapRef.current?.flyTo({ center: [r.lng, r.lat], zoom: 16, pitch: 64, duration: 1600 })} className="press flex min-h-11 w-full items-center gap-3 rounded-xl bg-raised px-3 py-2 text-left hover:bg-accent-track">
                         <span className={`tnum flex size-9 shrink-0 items-center justify-center rounded-full text-[15px] font-semibold text-white ${r.sample ? "bg-[#e08a3c]" : "bg-negative"}`}>{r.count}</span>
                         <span className="min-w-0"><span className="block truncate text-[15px] font-medium">{r.note || "Area report"}</span><span className="block truncate text-xs text-muted">{r.needs.map((n) => NEED_LABEL[n]).join(", ") || "No needs listed"}</span></span>
                       </button>
@@ -263,30 +260,34 @@ export default function CityMap({ tonight, week, sites, scenario }: { tonight: N
                   ))}
                 </ul>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button onClick={() => send({ action: "sampleReports" })} className="press rounded-full bg-raised px-3.5 py-2 text-sm font-medium hover:bg-accent-track">Load SAMPLE reports</button>
-                  {reports.length > 0 && <button onClick={() => send({ action: "clearReports" })} className="press rounded-full bg-raised px-3.5 py-2 text-sm font-medium hover:bg-accent-track">Clear</button>}
+                  <button onClick={() => send({ action: "sampleReports" })} className="press min-h-11 rounded-full bg-raised px-4 text-sm font-medium hover:bg-accent-track">Load SAMPLE reports</button>
+                  {reports.length > 0 && <button onClick={() => send({ action: "clearReports" })} className="press min-h-11 rounded-full bg-raised px-4 text-sm font-medium hover:bg-accent-track">Clear</button>}
                 </div>
-                <p className="mt-3 text-xs leading-relaxed text-muted">Orange columns are sample data for the demo. Red columns are reports sent from this app. Not on the map: Pathways and First Light (address unverified — call).</p>
+                <p className="mt-3 text-xs leading-relaxed text-muted">Orange columns are SAMPLE data for the demo. Red columns are reports sent from this app.</p>
               </div>
             )}
           </aside>
         </div>
 
-        {/* Bottom: the week, at a glance */}
-        <Link href={`/forecast${q}`} className={`${panel} rise press hidden items-end gap-4 px-5 py-3 sm:flex`} style={{ ["--d" as string]: "440ms" }}>
-          <span className="display pb-0.5 text-[22px] leading-none">Next 7 nights</span>
-          <span className="flex flex-1 items-end gap-2">
-            {week.map((n, i) => (
-              <span key={n.date} className="flex flex-1 flex-col items-center gap-1">
-                <span className="relative block h-7 w-full overflow-hidden rounded-full bg-accent-track/70">
-                  <span className="grow-x absolute inset-y-0 left-0 block rounded-full bg-accent" style={{ width: `${n.predicted}%`, ["--d" as string]: `${600 + i * 70}ms` }} />
-                </span>
-                <span className="tnum text-xs text-muted">{n.label.slice(0, 3)} · {n.lowF}° · {n.predicted} beds</span>
-              </span>
+        <HubTiles data={hub} store={store} q={q} />
+
+        {/* Tonight: which places are open, the room predicted at each, which warming stations are active */}
+        <section className={`${panel} rise order-5 mx-3 mt-3 flex flex-col gap-x-5 gap-y-2 px-4 py-3 lg:order-none lg:m-0 lg:mr-12 lg:flex-row lg:items-center lg:px-5`} style={{ ["--d" as string]: "780ms" }} aria-labelledby="tonight-h">
+          <h2 id="tonight-h" className="display shrink-0 text-[24px] leading-none">Tonight</h2>
+          <ul className="grid flex-1 gap-1.5 sm:grid-cols-2 lg:flex lg:gap-2">
+            {sites.map((s) => (
+              <li key={s.id} className="min-w-0 lg:flex-1">
+                <button onClick={() => focus(s)} className="press flex min-h-11 w-full items-center gap-2.5 rounded-xl bg-raised px-3 py-1.5 text-left hover:bg-accent-track">
+                  <i aria-hidden className={`size-2.5 shrink-0 rounded-full ${s.status === "likely" ? "breathe" : ""}`} style={{ background: STATUS[s.status].color }} />
+                  <span className="min-w-0">
+                    <span className="block truncate text-[14px] font-semibold leading-tight">{s.short}</span>
+                    <span className="tnum block truncate text-xs leading-tight text-muted"><span className="sr-only">{STATUS[s.status].text}. </span>{s.room}</span>
+                  </span>
+                </button>
+              </li>
             ))}
-          </span>
-          <span className="pb-1 text-sm font-medium text-accent">Open forecast →</span>
-        </Link>
+          </ul>
+        </section>
       </div>
     </div>
   );
