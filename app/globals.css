@@ -146,3 +146,18 @@ body { font-feature-settings: "ss01", "cv11"; text-rendering: optimizeLegibility
 @keyframes settle { 0% { transform: scale(1); } 35% { transform: scale(1.025); } 100% { transform: scale(1); } }
 .ask-card[data-changed="true"] { animation: settle 0.5s cubic-bezier(0.2, 0.8, 0.3, 1); }
 @media (prefers-reduced-motion: reduce) { .iso-block, .ask-card[data-changed="true"] { animation: none !important; } }
+
+/* Notify queue: sending an alert sweeps the row once, draws the tick, and pings its dot on the rail. */
+.notify-sweep { position: absolute; inset: 0; background: var(--accent-soft); transform: scaleX(0); transform-origin: left; opacity: 0; pointer-events: none; }
+@keyframes sweep { 0% { transform: scaleX(0); opacity: 1; } 60% { transform: scaleX(1); opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+.notify-row.is-sent .notify-sweep { animation: sweep 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) both; }
+.notify-check { stroke-dasharray: 1; }
+@keyframes tick { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.notify-row.is-sent .notify-check { animation: tick 0.45s 0.35s ease-out both; }
+.notify-row.is-sent .notify-done { animation: pop 0.5s 0.2s ease-out both; }
+.rail-dot { position: relative; transition: background-color 400ms ease; }
+.rail-dot.is-sent::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--accent); animation: ping 0.9s ease-out 1 both; }
+@media (prefers-reduced-motion: reduce) {
+  .notify-row.is-sent .notify-sweep, .notify-row.is-sent .notify-check, .notify-row.is-sent .notify-done, .rail-dot.is-sent::after { animation: none !important; }
+  .rail-dot.is-sent::after { display: none; }
+}

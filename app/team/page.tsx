@@ -3,14 +3,16 @@ import os from "node:os";
 import QRCode from "qrcode";
 import Nav from "@/components/Nav";
 import TeamBoard from "@/components/TeamBoard";
-import { buildWeek } from "@/lib/plan";
+import { buildHub } from "@/lib/hub";
 import { toBrief } from "@/lib/volunteers/nights";
 
 export const dynamic = "force-dynamic";
 
 export default async function TeamPage({ searchParams }: { searchParams: Promise<{ scenario?: string }> }) {
   const scenario = (await searchParams).scenario === "arctic";
-  const { nights, source } = await buildWeek(scenario);
+  const { nights, source, alerts } = await buildHub(scenario);
+  // Tonight's volunteer alert in the notify queue. Activating the plan here sends that same alert.
+  const alertId = alerts.find((a) => a.audience === "volunteers" && a.date === nights[0].day.date)?.id;
   // Demo: a QR code to this laptop on the local network, so phones in the room can join.
   const ip = Object.values(os.networkInterfaces()).flat().find((n) => n && n.family === "IPv4" && !n.internal)?.address ?? "localhost";
   const url = process.env.DEMO_URL ?? `http://${ip}:${process.env.PORT ?? 3001}/volunteer`;
@@ -30,7 +32,7 @@ export default async function TeamPage({ searchParams }: { searchParams: Promise
             Open the volunteer app
           </Link>
         </div>
-        <TeamBoard nights={nights.map(toBrief)} qr={qr} url={url} />
+        <TeamBoard nights={nights.map(toBrief)} qr={qr} url={url} alertId={alertId} queueHref={`/notify${scenario ? "?scenario=arctic" : ""}`} />
       </main>
     </>
   );

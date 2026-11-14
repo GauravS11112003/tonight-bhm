@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { useVolunteerStore } from "@/components/useVolunteerStore";
 import { REQUEST_LABEL } from "@/lib/volunteers/store";
@@ -11,7 +12,7 @@ const ago = (iso: string) => {
 };
 
 /** Staff view: forecast need vs who signed up, and the volunteers' requests. Updates every few seconds. */
-export default function TeamBoard({ nights, qr, url }: { nights: NightBrief[]; qr: string; url: string }) {
+export default function TeamBoard({ nights, qr, url, alertId, queueHref }: { nights: NightBrief[]; qr: string; url: string; alertId?: string; queueHref: string }) {
   const { store, send } = useVolunteerStore(1500);
   const [replies, setReplies] = useState<Record<string, string>>({});
   const open = store.requests.filter((r) => r.status === "open").sort((a, b) => Number(b.urgent) - Number(a.urgent));
@@ -30,10 +31,11 @@ export default function TeamBoard({ nights, qr, url }: { nights: NightBrief[]; q
         <p className="tnum mt-2 text-lg text-white/85">{store.alert ? store.alert.message : `${store.signups.filter((s) => s.date === t.date).length} of ${t.needed} volunteers signed up. One tap alerts every phone with the app open.`}</p>
         <div className="mt-5 flex flex-wrap gap-3">
           {!store.alert ? (
-            <button onClick={() => send({ action: "broadcast", message })} className="press min-h-14 rounded-full bg-white px-8 text-[18px] font-semibold text-negative">Activate cold-night plan</button>
+            <button onClick={() => send(alertId && !store.sent?.[alertId] ? { action: "sendAlert", id: alertId, broadcast: message } : { action: "broadcast", message })} className="press min-h-14 rounded-full bg-white px-8 text-[18px] font-semibold text-negative">Activate cold-night plan</button>
           ) : (
             <button onClick={() => send({ action: "clear" })} className="press min-h-14 rounded-full bg-white/20 px-8 text-[18px] font-semibold">Stand down</button>
           )}
+          <Link href={queueHref} className="press flex min-h-14 items-center rounded-full bg-white/15 px-6 text-[16px] font-medium hover:bg-white/25">Open the alert queue</Link>
         </div>
       </div>
       <div className="rounded-2xl bg-white p-3 text-center text-ink">
