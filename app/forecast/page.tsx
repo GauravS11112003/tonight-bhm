@@ -47,8 +47,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     <>
       <Nav active="/forecast" scenario={scenario} source={source} />
       <main className="mx-auto max-w-[1320px] overflow-x-clip px-4 sm:px-8">
-        <LiveHero day={nights[0].day} q={q} scenario={scenario} />
         <WeekChart nights={nights} />
+        <div className="mt-12"><LiveHero day={nights[0].day} q={q} scenario={scenario} /></div>
         <PrepareSection nights={nights} q={q} />
         <ModelArena />
       </main>

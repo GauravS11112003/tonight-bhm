@@ -25,7 +25,7 @@ export default function WeekChart({ nights }: { nights: Night[] }) {
   const champ = nights[0].prediction.model ?? "ols";
 
   return (
-    <section className="mt-12" aria-labelledby="week-h">
+    <section className="mt-8" aria-labelledby="week-h">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 id="week-h" className="display rise text-[44px] leading-none sm:text-[56px]">The week ahead</h2>
