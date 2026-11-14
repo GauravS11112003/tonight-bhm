@@ -177,4 +177,4 @@ Every choice, with the alternative we rejected, is in [`DECISIONS.md`](DECISIONS
 
 ## Team
 
-Built by **Gaurav Shrivastava** at Shipt Hacks 2026, Birmingham.
+Built by **Gaurav Shrivastava** and **Kavya Gupta** at Shipt Hacks 2026, Birmingham.
